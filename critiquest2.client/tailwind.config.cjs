@@ -1,6 +1,6 @@
-import { defineConfig } from '@tailwindcss/vite'
-
-export default defineConfig({
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
@@ -53,5 +53,10 @@ export default defineConfig({
         }
       }
     },
-  }
-})
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}
+

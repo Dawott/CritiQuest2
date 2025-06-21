@@ -1,6 +1,6 @@
 using CritiQuest2.Server.Data;
 using CritiQuest2.Server.Model.Entities;
-using Microsoft.AspNetCore.Authentication;
+using CritiQuest2.Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

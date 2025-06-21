@@ -443,3 +443,7 @@ FodyWeavers.xsd
 *.msp
 \bin
 \obj
+/.vscode
+/.vs
+/CritiQuest2.Server/obj/Debug/net8.0/CritiQuest2.Server.AssemblyInfoInputs.cache
+/CritiQuest2.Server/obj/Debug/net8.0/CritiQuest2.Server.AssemblyInfo.cs

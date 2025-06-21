@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-vue';
+import tailwind from '@tailwindcss/vite'
 import fs from 'fs';
 import path from 'path';
 import child_process from 'child_process';
@@ -39,7 +40,7 @@ const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_H
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [plugin()],
+  plugins: [plugin(), tailwind()],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -47,10 +48,10 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
-                target,
-                secure: false
-            }
+        '^/api': {
+          target,
+          secure: false
+        }
         },
         port: parseInt(env.DEV_SERVER_PORT || '59279'),
         https: {

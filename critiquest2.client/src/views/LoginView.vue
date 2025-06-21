@@ -3,10 +3,10 @@
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to CritiQuest2
+          Zaloguj się do CritiQuest
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          Begin your philosophical journey
+          Rozpocznij swoją podróż
         </p>
       </div>
 
@@ -17,7 +17,7 @@
 
         <div class="space-y-4">
           <div>
-            <label for="email" class="form-label">Email address</label>
+            <label for="email" class="form-label">Email</label>
             <input id="email"
                    v-model="form.email"
                    name="email"
@@ -25,11 +25,11 @@
                    autocomplete="email"
                    required
                    class="form-input"
-                   placeholder="Enter your email" />
+                   placeholder="Wpisz email" />
           </div>
 
           <div>
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label">Hasło</label>
             <input id="password"
                    v-model="form.password"
                    name="password"
@@ -37,7 +37,7 @@
                    autocomplete="current-password"
                    required
                    class="form-input"
-                   placeholder="Enter your password" />
+                   placeholder="Wpisz hasło" />
           </div>
         </div>
 
@@ -45,16 +45,16 @@
           <button type="submit"
                   :disabled="authStore.loading"
                   class="btn-primary w-full">
-            <span v-if="authStore.loading">Signing in...</span>
-            <span v-else>Sign in</span>
+            <span v-if="authStore.loading">Loguję się...</span>
+            <span v-else>Zaloguj</span>
           </button>
         </div>
 
         <div class="text-center">
           <p class="text-sm text-gray-600">
-            Don't have an account?
+            Nie masz konta?
             <router-link to="/register" class="font-medium text-primary-600 hover:text-primary-500">
-              Sign up
+              Zarejestruj się
             </router-link>
           </p>
         </div>

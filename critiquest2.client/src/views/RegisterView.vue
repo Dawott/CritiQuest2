@@ -3,10 +3,10 @@
     <div class="max-w-md w-full space-y-8">
       <div>
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Join CritiQuest2
+          Dołącz do CritiQuest
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          Start your journey through philosophical wisdom
+          Wyjdź z jaskini i poznaj Prawdę
         </p>
       </div>
 
@@ -17,18 +17,18 @@
 
         <div class="space-y-4">
           <div>
-            <label for="displayName" class="form-label">Display Name</label>
+            <label for="displayName" class="form-label">Nazwa użytkownika</label>
             <input id="displayName"
                    v-model="form.displayName"
                    name="displayName"
                    type="text"
                    required
                    class="form-input"
-                   placeholder="Choose a display name" />
+                   placeholder="Wybierz nazwę użytkownika" />
           </div>
 
           <div>
-            <label for="email" class="form-label">Email address</label>
+            <label for="email" class="form-label">Email</label>
             <input id="email"
                    v-model="form.email"
                    name="email"
@@ -36,11 +36,11 @@
                    autocomplete="email"
                    required
                    class="form-input"
-                   placeholder="Enter your email" />
+                   placeholder="Wpisz adres email" />
           </div>
 
           <div>
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label">Hasło</label>
             <input id="password"
                    v-model="form.password"
                    name="password"
@@ -48,11 +48,11 @@
                    autocomplete="new-password"
                    required
                    class="form-input"
-                   placeholder="Create a password" />
+                   placeholder="Stwórz hasło" />
           </div>
 
           <div>
-            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <label for="confirmPassword" class="form-label">Potwierdź hasło</label>
             <input id="confirmPassword"
                    v-model="form.confirmPassword"
                    name="confirmPassword"
@@ -60,7 +60,7 @@
                    autocomplete="new-password"
                    required
                    class="form-input"
-                   placeholder="Confirm your password" />
+                   placeholder="Potwierdź hasło" />
           </div>
         </div>
 
@@ -68,16 +68,16 @@
           <button type="submit"
                   :disabled="authStore.loading || !isFormValid"
                   class="btn-primary w-full">
-            <span v-if="authStore.loading">Creating account...</span>
-            <span v-else>Create account</span>
+            <span v-if="authStore.loading">Tworzę konto...</span>
+            <span v-else>Utwórz konto</span>
           </button>
         </div>
 
         <div class="text-center">
           <p class="text-sm text-gray-600">
-            Already have an account?
+            Masz już konto?
             <router-link to="/login" class="font-medium text-primary-600 hover:text-primary-500">
-              Sign in
+              Zaloguj się!
             </router-link>
           </p>
         </div>

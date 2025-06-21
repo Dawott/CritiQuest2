@@ -29,3 +29,5 @@ coverage
 
 *.tsbuildinfo
 /.vs/CritiQuest2/CopilotIndices/17.14.734.62261
+/.vs/CritiQuest2/config/applicationhost.config
+/.vs/CritiQuest2/DesignTimeBuild/.dtbcache.v2

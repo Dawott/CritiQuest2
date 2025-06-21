@@ -87,172 +87,172 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useQuizzesStore } from '@/stores/quizzes'
-import QuestionDisplay from '@/components/quiz/QuestionDisplay.vue'
-import QuizResults from '@/components/quiz/QuizResults.vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { useQuizzesStore } from '@/stores/quizzes'
+  import QuestionDisplay from '@/components/quiz/QuestionDisplay.vue'
+  import QuizResults from '@/components/quiz/QuizResults.vue'
 
-const route = useRoute()
-const router = useRouter()
-const quizzesStore = useQuizzesStore()
+  const route = useRoute()
+  const router = useRouter()
+  const quizzesStore = useQuizzesStore()
 
-// State
-const currentQuestionIndex = ref(0)
-const userAnswers = ref<Record<string, string[]>>({})
-const showSubmitModal = ref(false)
-const startTime = ref(Date.now())
-const timeRemaining = ref<number | null>(null)
+  // State
+  const currentQuestionIndex = ref(0)
+  const userAnswers = ref<Record<string, string[]>>({})
+  const showSubmitModal = ref(false)
+  const startTime = ref(Date.now())
+  const timeRemaining = ref<number | null>(null)
 
-// Computed
-const currentQuiz = computed(() => quizzesStore.currentQuiz)
-const currentAttemptId = computed(() => quizzesStore.currentAttemptId)
-const quizResult = computed(() => quizzesStore.quizResult)
-const loading = computed(() => quizzesStore.loading)
+  // Computed
+  const currentQuiz = computed(() => quizzesStore.currentQuiz)
+  const currentAttemptId = computed(() => quizzesStore.currentAttemptId)
+  const quizResult = computed(() => quizzesStore.quizResult)
+  const loading = computed(() => quizzesStore.loading)
 
-const currentQuestion = computed(() => {
-  if (!currentQuiz.value) return null
-  return currentQuiz.value.questions[currentQuestionIndex.value]
-})
+  const currentQuestion = computed(() => {
+    if (!currentQuiz.value) return null
+    return currentQuiz.value.questions[currentQuestionIndex.value]
+  })
 
-const isLastQuestion = computed(() => {
-  if (!currentQuiz.value) return false
-  return currentQuestionIndex.value === currentQuiz.value.questions.length - 1
-})
+  const isLastQuestion = computed(() => {
+    if (!currentQuiz.value) return false
+    return currentQuestionIndex.value === currentQuiz.value.questions.length - 1
+  })
 
-const progress = computed(() => {
-  if (!currentQuiz.value) return 0
-  return ((currentQuestionIndex.value + 1) / currentQuiz.value.questions.length) * 100
-})
+  const progress = computed(() => {
+    if (!currentQuiz.value) return 0
+    return ((currentQuestionIndex.value + 1) / currentQuiz.value.questions.length) * 100
+  })
 
-const totalQuestions = computed(() => currentQuiz.value?.questions.length || 0)
+  const totalQuestions = computed(() => currentQuiz.value?.questions.length || 0)
 
-const answeredCount = computed(() => {
-  return Object.keys(userAnswers.value).filter(questionId =>
-    userAnswers.value[questionId] && userAnswers.value[questionId].length > 0
-  ).length
-})
+  const answeredCount = computed(() => {
+    return Object.keys(userAnswers.value).filter(questionId =>
+      userAnswers.value[questionId] && userAnswers.value[questionId].length > 0
+    ).length
+  })
 
-// Timer management
-let timerInterval: number | null = null
+  // Timer management
+  let timerInterval: number | null = null
 
-const startTimer = () => {
-  if (!currentQuiz.value?.timeLimit) return
+  const startTimer = () => {
+    if (!currentQuiz.value?.timeLimit) return
 
-  timeRemaining.value = currentQuiz.value.timeLimit
+    timeRemaining.value = currentQuiz.value.timeLimit
 
-  timerInterval = setInterval(() => {
-    if (timeRemaining.value && timeRemaining.value > 0) {
-      timeRemaining.value--
-    } else {
-      autoSubmitQuiz()
+    timerInterval = setInterval(() => {
+      if (timeRemaining.value && timeRemaining.value > 0) {
+        timeRemaining.value--
+      } else {
+        autoSubmitQuiz()
+      }
+    }, 1000)
+  }
+
+  const stopTimer = () => {
+    if (timerInterval) {
+      clearInterval(timerInterval)
+      timerInterval = null
     }
-  }, 1000)
-}
-
-const stopTimer = () => {
-  if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
-  }
-}
-
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-}
-
-// Actions
-const updateAnswer = (questionId: string, answers: string[]) => {
-  userAnswers.value[questionId] = answers
-}
-
-const nextQuestion = () => {
-  if (!isLastQuestion.value) {
-    currentQuestionIndex.value++
-  }
-}
-
-const previousQuestion = () => {
-  if (currentQuestionIndex.value > 0) {
-    currentQuestionIndex.value--
-  }
-}
-
-const submitQuiz = async () => {
-  if (!currentAttemptId.value || !currentQuiz.value) return
-
-  showSubmitModal.value = false
-  stopTimer()
-
-  const timeSpent = Math.floor((Date.now() - startTime.value) / 1000)
-
-  const submission = {
-    attemptId: currentAttemptId.value,
-    timeSpent,
-    answers: Object.entries(userAnswers.value).map(([questionId, selectedAnswers]) => ({
-      questionId,
-      selectedAnswers
-    }))
   }
 
-  try {
-    await quizzesStore.submitQuiz(currentQuiz.value.id, submission)
-  } catch (error) {
-    console.error('Failed to submit quiz:', error)
-    // Handle error appropriately
-  }
-}
-
-const autoSubmitQuiz = () => {
-  showSubmitModal.value = false
-  submitQuiz()
-}
-
-const retryQuiz = async () => {
-  if (!currentQuiz.value) return
-
-  // Reset state
-  currentQuestionIndex.value = 0
-  userAnswers.value = {}
-  startTime.value = Date.now()
-
-  // Start new attempt
-  try {
-    await quizzesStore.startAttempt(currentQuiz.value.id)
-    startTimer()
-  } catch (error) {
-    console.error('Failed to start new attempt:', error)
-  }
-}
-
-const goToLessons = () => {
-  router.push('/lessons')
-}
-
-// Lifecycle
-onMounted(async () => {
-  const quizId = route.params.id as string
-  if (!quizId) {
-    router.push('/lessons')
-    return
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
-  try {
-    await quizzesStore.fetchQuiz(quizId)
-    await quizzesStore.startAttempt(quizId)
-    startTimer()
-  } catch (error) {
-    console.error('Failed to load quiz:', error)
+  // Actions
+  const updateAnswer = (questionId: string, answers: string[]) => {
+    userAnswers.value[questionId] = answers
+  }
+
+  const nextQuestion = () => {
+    if (!isLastQuestion.value) {
+      currentQuestionIndex.value++
+    }
+  }
+
+  const previousQuestion = () => {
+    if (currentQuestionIndex.value > 0) {
+      currentQuestionIndex.value--
+    }
+  }
+
+  const submitQuiz = async () => {
+    if (!currentAttemptId.value || !currentQuiz.value) return
+
+    showSubmitModal.value = false
+    stopTimer()
+
+    const timeSpent = Math.floor((Date.now() - startTime.value) / 1000)
+
+    const submission = {
+      attemptId: currentAttemptId.value,
+      timeSpent,
+      answers: Object.entries(userAnswers.value).map(([questionId, selectedAnswers]) => ({
+        questionId,
+        selectedAnswers
+      }))
+    }
+
+    try {
+      await quizzesStore.submitQuiz(currentQuiz.value.id, submission)
+    } catch (error) {
+      console.error('Failed to submit quiz:', error)
+      // Handle error appropriately
+    }
+  }
+
+  const autoSubmitQuiz = () => {
+    showSubmitModal.value = false
+    submitQuiz()
+  }
+
+  const retryQuiz = async () => {
+    if (!currentQuiz.value) return
+
+    // Reset state
+    currentQuestionIndex.value = 0
+    userAnswers.value = {}
+    startTime.value = Date.now()
+
+    // Start new attempt
+    try {
+      await quizzesStore.startAttempt(currentQuiz.value.id)
+      startTimer()
+    } catch (error) {
+      console.error('Failed to start new attempt:', error)
+    }
+  }
+
+  const goToLessons = () => {
     router.push('/lessons')
   }
-})
 
-onUnmounted(() => {
-  stopTimer()
-  quizzesStore.clearQuiz()
-})
+  // Lifecycle
+  onMounted(async () => {
+    const quizId = route.params.id as string
+    if (!quizId) {
+      router.push('/lessons')
+      return
+    }
+
+    try {
+      await quizzesStore.fetchQuiz(quizId)
+      await quizzesStore.startAttempt(quizId)
+      startTimer()
+    } catch (error) {
+      console.error('Failed to load quiz:', error)
+      router.push('/lessons')
+    }
+  })
+
+  onUnmounted(() => {
+    stopTimer()
+    quizzesStore.clearQuiz()
+  })
 </script>
 
 <style scoped>

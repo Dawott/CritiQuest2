@@ -4,6 +4,7 @@ using CritiQuest2.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CritiQuest2.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250621210907_Interaktywne")]
+    partial class Interaktywne
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -223,135 +226,6 @@ namespace CritiQuest2.Server.Migrations
                     b.ToTable("DebateArguments");
                 });
 
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.InteractionProgress", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("CompletedSections")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastActivityAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LessonId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("TotalInteractiveSections")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalTimeSpentSeconds")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LessonId");
-
-                    b.HasIndex("UserId", "LessonId")
-                        .IsUnique();
-
-                    b.ToTable("InteractionProgress");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.InteractionTemplate", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("TemplateConfigJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Type", "Category");
-
-                    b.ToTable("InteractionTemplates");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.InteractiveSection", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ConfigurationJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<int>("EstimatedTimeMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LessonId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("OrderInLesson")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LessonId", "OrderInLesson");
-
-                    b.ToTable("InteractiveSections");
-                });
-
             modelBuilder.Entity("CritiQuest2.Server.Model.Entities.Lesson", b =>
                 {
                     b.Property<string>("Id")
@@ -418,49 +292,6 @@ namespace CritiQuest2.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Lessons");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.LessonInteractionResponse", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("InteractionType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LessonId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ResponseDataJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SectionId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LessonId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LessonInteractionResponses");
                 });
 
             modelBuilder.Entity("CritiQuest2.Server.Model.Entities.LessonProgress", b =>
@@ -791,57 +622,6 @@ namespace CritiQuest2.Server.Migrations
                     b.ToTable("QuizAttempts");
                 });
 
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.UserInteractionResponse", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CompletionPercentage")
-                        .HasColumnType("int");
-
-                    b.Property<string>("InteractiveSectionId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastUpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("QualityScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ResponseDataJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TimeSpentSeconds")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InteractiveSectionId");
-
-                    b.HasIndex("UserId", "InteractiveSectionId")
-                        .IsUnique();
-
-                    b.ToTable("UserInteractionResponses");
-                });
-
             modelBuilder.Entity("CritiQuest2.Server.Model.Entities.UserProgression", b =>
                 {
                     b.Property<string>("Id")
@@ -1069,55 +849,6 @@ namespace CritiQuest2.Server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.InteractionProgress", b =>
-                {
-                    b.HasOne("CritiQuest2.Server.Model.Entities.Lesson", "Lesson")
-                        .WithMany()
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CritiQuest2.Server.Model.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.InteractiveSection", b =>
-                {
-                    b.HasOne("CritiQuest2.Server.Model.Entities.Lesson", "Lesson")
-                        .WithMany()
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.LessonInteractionResponse", b =>
-                {
-                    b.HasOne("CritiQuest2.Server.Model.Entities.Lesson", "Lesson")
-                        .WithMany()
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CritiQuest2.Server.Model.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("CritiQuest2.Server.Model.Entities.LessonProgress", b =>
                 {
                     b.HasOne("CritiQuest2.Server.Model.Entities.Lesson", "Lesson")
@@ -1201,25 +932,6 @@ namespace CritiQuest2.Server.Migrations
                         .IsRequired();
 
                     b.Navigation("Quiz");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.UserInteractionResponse", b =>
-                {
-                    b.HasOne("CritiQuest2.Server.Model.Entities.InteractiveSection", "InteractiveSection")
-                        .WithMany("UserResponses")
-                        .HasForeignKey("InteractiveSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CritiQuest2.Server.Model.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InteractiveSection");
 
                     b.Navigation("User");
                 });
@@ -1313,11 +1025,6 @@ namespace CritiQuest2.Server.Migrations
                     b.Navigation("Progression");
 
                     b.Navigation("Stats");
-                });
-
-            modelBuilder.Entity("CritiQuest2.Server.Model.Entities.InteractiveSection", b =>
-                {
-                    b.Navigation("UserResponses");
                 });
 
             modelBuilder.Entity("CritiQuest2.Server.Model.Entities.Lesson", b =>

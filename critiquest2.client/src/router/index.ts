@@ -74,6 +74,15 @@ const router = createRouter({
         requiresAuth: true,
         title: 'Wyniki Quizu'
       }
+    },
+    {
+      path: '/interactive-scenarios/:sectionId',
+      name: 'InteractiveScenario',
+      component: () => import('@/views/InteractiveScenarioView.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'Scenariusz Interaktywny'
+      }
     }
   ]
 })

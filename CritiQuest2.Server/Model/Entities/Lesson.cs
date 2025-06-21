@@ -71,4 +71,31 @@ namespace CritiQuest2.Server.Model.Entities
         public int Attempts { get; set; } = 1;
         public int BestScore { get; set; } = 0;
     }
+
+    public class LessonInteractionResponse
+    {
+        [MaxLength(100)]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        [MaxLength(450)]
+        public string UserId { get; set; } = string.Empty;
+
+        [MaxLength(100)]
+        public string LessonId { get; set; } = string.Empty;
+
+        [MaxLength(100)]
+        public string SectionId { get; set; } = string.Empty;
+
+        public InteractionType InteractionType { get; set; }
+
+        // JSON field to store all responses flexibly
+        public string ResponseDataJson { get; set; } = "{}";
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
+        // Navigation properties
+        public ApplicationUser User { get; set; } = null!;
+        public Lesson Lesson { get; set; } = null!;
+    }
 }

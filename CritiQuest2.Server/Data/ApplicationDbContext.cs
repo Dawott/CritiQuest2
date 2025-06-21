@@ -22,6 +22,11 @@ namespace CritiQuest2.Server.Data
         public DbSet<QuizAttempt> QuizAttempts { get; set; }
         public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
         public DbSet<DebateArgument> DebateArguments { get; set; }
+        public DbSet<InteractiveSection> InteractiveSections { get; set; }
+        public DbSet<InteractionTemplate> InteractionTemplates { get; set; }
+        public DbSet<UserInteractionResponse> UserInteractionResponses { get; set; }
+        public DbSet<InteractionProgress> InteractionProgress { get; set; }
+        public DbSet<LessonInteractionResponse> LessonInteractionResponses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -153,6 +158,66 @@ namespace CritiQuest2.Server.Data
 
             builder.Entity<AchievementProgress>()
                 .Ignore(ap => ap.Progress);
+
+            builder.Entity<InteractiveSection>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.Lesson)
+                    .WithMany()
+                    .HasForeignKey(e => e.LessonId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => new { e.LessonId, e.OrderInLesson });
+            });
+
+            // Interaction Template configuration
+            builder.Entity<InteractionTemplate>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.Type, e.Category });
+            });
+
+            // User Interaction Response configuration
+            builder.Entity<UserInteractionResponse>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.InteractiveSection)
+                    .WithMany(s => s.UserResponses)
+                    .HasForeignKey(e => e.InteractiveSectionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Ensure one response per user per section
+                entity.HasIndex(e => new { e.UserId, e.InteractiveSectionId })
+                    .IsUnique();
+            });
+
+            // Interaction Progress configuration
+            builder.Entity<InteractionProgress>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Lesson)
+                    .WithMany()
+                    .HasForeignKey(e => e.LessonId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Ensure one progress record per user per lesson
+                entity.HasIndex(e => new { e.UserId, e.LessonId })
+                    .IsUnique();
+            });
+
         }
     }
 }

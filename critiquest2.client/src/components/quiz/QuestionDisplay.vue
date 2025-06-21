@@ -87,51 +87,51 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Question } from '@/services/quizApi'
-import DebateInterface from './DebateInterface.vue'
+  import { computed } from 'vue'
+  import type { Question } from '@/services/quizApi'
+  import DebateInterface from './DebateInterface.vue'
 
-interface Props {
-  question: Question
-  userAnswer: string[]
-}
-
-interface Emits {
-  (e: 'answer-changed', questionId: string, answers: string[]): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-
-const isSelected = (option: string) => {
-  return props.userAnswer.includes(option)
-}
-
-const selectSingleOption = (option: string) => {
-  emit('answer-changed', props.question.id, [option])
-}
-
-const toggleMultipleOption = (option: string) => {
-  const currentAnswers = [...props.userAnswer]
-  const index = currentAnswers.indexOf(option)
-
-  if (index > -1) {
-    currentAnswers.splice(index, 1)
-  } else {
-    currentAnswers.push(option)
+  interface Props {
+    question: Question
+    userAnswer: string[]
   }
 
-  emit('answer-changed', props.question.id, currentAnswers)
-}
+  interface Emits {
+    (e: 'answer-changed', questionId: string, answers: string[]): void
+  }
 
-const getScenarioContext = () => {
-  // Extract scenario context from question text or philosophical context
-  return props.question.philosophicalContext || "Rozważ poniższą sytuację i wybierz najbardziej odpowiednią reakcję zgodną z zasadami filozoficznymi."
-}
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
 
-const handleDebateAnswer = (answers: string[]) => {
-  emit('answer-changed', props.question.id, answers)
-}
+  const isSelected = (option: string) => {
+    return props.userAnswer.includes(option)
+  }
+
+  const selectSingleOption = (option: string) => {
+    emit('answer-changed', props.question.id, [option])
+  }
+
+  const toggleMultipleOption = (option: string) => {
+    const currentAnswers = [...props.userAnswer]
+    const index = currentAnswers.indexOf(option)
+
+    if (index > -1) {
+      currentAnswers.splice(index, 1)
+    } else {
+      currentAnswers.push(option)
+    }
+
+    emit('answer-changed', props.question.id, currentAnswers)
+  }
+
+  const getScenarioContext = () => {
+    // Extract scenario context from question text or philosophical context
+    return props.question.philosophicalContext || "Rozważ poniższą sytuację i wybierz najbardziej odpowiednią reakcję zgodną z zasadami filozoficznymi."
+  }
+
+  const handleDebateAnswer = (answers: string[]) => {
+    emit('answer-changed', props.question.id, answers)
+  }
 </script>
 
 <style scoped>

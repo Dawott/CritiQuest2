@@ -171,38 +171,38 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { QuizResult } from '@/services/quizApi'
+  import { computed } from 'vue'
+  import type { QuizResult } from '@/services/quizApi'
 
-interface Props {
-  result: QuizResult
-}
-
-interface Emits {
-  (e: 'retry'): void
-  (e: 'continue'): void
-}
-
-const props = defineProps<Props>()
-defineEmits<Emits>()
-
-const correctAnswers = computed(() => {
-  return props.result.results.filter(r => r.isCorrect).length
-})
-
-const totalQuestions = computed(() => {
-  return props.result.results.length
-})
-
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-
-  if (minutes > 0) {
-    return `${minutes}min ${remainingSeconds}s`
+  interface Props {
+    result: QuizResult
   }
-  return `${remainingSeconds}s`
-}
+
+  interface Emits {
+    (e: 'retry'): void
+    (e: 'continue'): void
+  }
+
+  const props = defineProps<Props>()
+  defineEmits<Emits>()
+
+  const correctAnswers = computed(() => {
+    return props.result.results.filter(r => r.isCorrect).length
+  })
+
+  const totalQuestions = computed(() => {
+    return props.result.results.length
+  })
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+
+    if (minutes > 0) {
+      return `${minutes}min ${remainingSeconds}s`
+    }
+    return `${remainingSeconds}s`
+  }
 </script>
 
 <style scoped>

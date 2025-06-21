@@ -123,187 +123,187 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import type { Question } from '@/services/quizApi'
+  import { ref, computed, onMounted } from 'vue'
+  import type { Question } from '@/services/quizApi'
 
-interface DebateArgument {
-  id: string
-  text: string
-  philosophical_basis: string
-  strength_against: string[]
-  weakness_against: string[]
-  school_bonus: string[]
-  conviction_power: number
-  requires_philosopher?: string
-}
-
-interface DebateResult {
-  winner: 'user' | 'opponent'
-  totalRounds: number
-  conviction_score: number
-  learning_insights: string[]
-  philosophical_growth: { concept: string; understanding: number }[]
-}
-
-interface Props {
-  question: Question
-  userAnswer: string[]
-}
-
-interface Emits {
-  (e: 'answer-changed', answers: string[]): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-
-// State
-const currentRound = ref(1)
-const selectedArgument = ref<DebateArgument | null>(null)
-const userArguments = ref<DebateArgument[]>([])
-const opponentResponse = ref<string | null>(null)
-const isCompleted = ref(false)
-const finalResult = ref<DebateResult | null>(null)
-
-// Mock arguments - in real implementation, these would come from your database
-const mockArguments: DebateArgument[] = [
-  {
-    id: 'arg-1',
-    text: 'Cnota jest jedynym prawdziwym dobrem, wszystkie inne rzeczy są obojętne.',
-    philosophical_basis: 'Stoicyzm',
-    strength_against: ['hedonism'],
-    weakness_against: ['pragmatism'],
-    school_bonus: ['stoicism'],
-    conviction_power: 8
-  },
-  {
-    id: 'arg-2',
-    text: 'Przyjemność i unikanie bólu to naturalne cele życia.',
-    philosophical_basis: 'Hedonizm',
-    strength_against: ['stoicism'],
-    weakness_against: ['virtue-ethics'],
-    school_bonus: ['hedonism'],
-    conviction_power: 6
-  },
-  {
-    id: 'arg-3',
-    text: 'Powinniśmy dążyć do tego, co przynosi największe szczęście największej liczbie ludzi.',
-    philosophical_basis: 'Utylitaryzm',
-    strength_against: ['egoism'],
-    weakness_against: ['individual-rights'],
-    school_bonus: ['utilitarianism'],
-    conviction_power: 7
+  interface DebateArgument {
+    id: string
+    text: string
+    philosophical_basis: string
+    strength_against: string[]
+    weakness_against: string[]
+    school_bonus: string[]
+    conviction_power: number
+    requires_philosopher?: string
   }
-]
 
-const debateConfig = computed(() => props.question.debateConfig!)
+  interface DebateResult {
+    winner: 'user' | 'opponent'
+    totalRounds: number
+    conviction_score: number
+    learning_insights: string[]
+    philosophical_growth: { concept: string; understanding: number }[]
+  }
 
-const availableArguments = computed(() => {
-  // Filter arguments that haven't been used yet
-  const usedIds = userArguments.value.map(arg => arg.id)
-  return mockArguments.filter(arg => !usedIds.includes(arg.id))
-})
+  interface Props {
+    question: Question
+    userAnswer: string[]
+  }
 
-const formatSchoolName = (school: string) => {
-  return school.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-}
+  interface Emits {
+    (e: 'answer-changed', answers: string[]): void
+  }
 
-const formatConcept = (concept: string) => {
-  return concept.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-}
+  const props = defineProps<Props>()
+  const emit = defineEmits<Emits>()
 
-const getArgumentStrength = (argument: DebateArgument) => {
-  const currentSchools = debateConfig.value.schools_involved
-  const hasStrength = argument.strength_against.some(school => currentSchools.includes(school))
-  const hasWeakness = argument.weakness_against.some(school => currentSchools.includes(school))
+  // State
+  const currentRound = ref(1)
+  const selectedArgument = ref<DebateArgument | null>(null)
+  const userArguments = ref<DebateArgument[]>([])
+  const opponentResponse = ref<string | null>(null)
+  const isCompleted = ref(false)
+  const finalResult = ref<DebateResult | null>(null)
 
-  if (hasStrength && !hasWeakness) return 'strong'
-  if (hasWeakness && !hasStrength) return 'weak'
-  return null
-}
-
-const getConvictionClass = (power: number) => {
-  if (power >= 8) return 'conviction-high'
-  if (power >= 6) return 'conviction-medium'
-  return 'conviction-low'
-}
-
-const selectArgument = (argument: DebateArgument) => {
-  selectedArgument.value = argument
-}
-
-const makeArgument = () => {
-  if (!selectedArgument.value) return
-
-  userArguments.value.push(selectedArgument.value)
-
-  // Simulate opponent response
-  setTimeout(() => {
-    opponentResponse.value = generateOpponentResponse(selectedArgument.value!)
-    selectedArgument.value = null
-
-    if (currentRound.value >= debateConfig.value.max_rounds) {
-      completeDebate()
-    } else {
-      currentRound.value++
-      // Clear opponent response for next round
-      setTimeout(() => {
-        opponentResponse.value = null
-      }, 3000)
+  // Mock arguments - in real implementation, these would come from your database
+  const mockArguments: DebateArgument[] = [
+    {
+      id: 'arg-1',
+      text: 'Cnota jest jedynym prawdziwym dobrem, wszystkie inne rzeczy są obojętne.',
+      philosophical_basis: 'Stoicyzm',
+      strength_against: ['hedonism'],
+      weakness_against: ['pragmatism'],
+      school_bonus: ['stoicism'],
+      conviction_power: 8
+    },
+    {
+      id: 'arg-2',
+      text: 'Przyjemność i unikanie bólu to naturalne cele życia.',
+      philosophical_basis: 'Hedonizm',
+      strength_against: ['stoicism'],
+      weakness_against: ['virtue-ethics'],
+      school_bonus: ['hedonism'],
+      conviction_power: 6
+    },
+    {
+      id: 'arg-3',
+      text: 'Powinniśmy dążyć do tego, co przynosi największe szczęście największej liczbie ludzi.',
+      philosophical_basis: 'Utylitaryzm',
+      strength_against: ['egoism'],
+      weakness_against: ['individual-rights'],
+      school_bonus: ['utilitarianism'],
+      conviction_power: 7
     }
-  }, 1000)
-}
-
-const generateOpponentResponse = (userArgument: DebateArgument) => {
-  const responses = [
-    `Twój argument o ${userArgument.philosophical_basis.toLowerCase()} pomija ważne aspekty...`,
-    `Choć ${userArgument.philosophical_basis} ma swoje zalety, nie uwzględnia...`,
-    `Twoje stanowisko oparte na ${userArgument.philosophical_basis.toLowerCase()} można skrytykować...`,
   ]
-  return responses[Math.floor(Math.random() * responses.length)]
-}
 
-const completeDebate = () => {
-  isCompleted.value = true
+  const debateConfig = computed(() => props.question.debateConfig!)
 
-  // Calculate results
-  const totalConviction = userArguments.value.reduce((sum, arg) => sum + arg.conviction_power, 0)
-  const averageConviction = totalConviction / userArguments.value.length
-  const convictionScore = Math.round(averageConviction * 10)
+  const availableArguments = computed(() => {
+    // Filter arguments that haven't been used yet
+    const usedIds = userArguments.value.map(arg => arg.id)
+    return mockArguments.filter(arg => !usedIds.includes(arg.id))
+  })
 
-  finalResult.value = {
-    winner: convictionScore >= 70 ? 'user' : 'opponent',
-    totalRounds: currentRound.value,
-    conviction_score: convictionScore,
-    learning_insights: [
-      'Rozważyłeś różne perspektywy filozoficzne',
-      'Nauczyłeś się argumentować swoją pozycję',
-      'Poznałeś kontrastujące podejścia do etyki'
-    ],
-    philosophical_growth: [
-      { concept: 'logical-reasoning', understanding: Math.min(100, convictionScore + 20) },
-      { concept: 'ethical-thinking', understanding: Math.min(100, convictionScore + 15) }
-    ]
+  const formatSchoolName = (school: string) => {
+    return school.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
-  // Emit the result
-  emit('answer-changed', [JSON.stringify(finalResult.value)])
-}
+  const formatConcept = (concept: string) => {
+    return concept.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
 
-onMounted(() => {
-  // If we have an existing answer, restore the debate state
-  if (props.userAnswer.length > 0) {
-    try {
-      const savedResult = JSON.parse(props.userAnswer[0])
-      if (savedResult.winner) {
-        finalResult.value = savedResult
-        isCompleted.value = true
+  const getArgumentStrength = (argument: DebateArgument) => {
+    const currentSchools = debateConfig.value.schools_involved
+    const hasStrength = argument.strength_against.some(school => currentSchools.includes(school))
+    const hasWeakness = argument.weakness_against.some(school => currentSchools.includes(school))
+
+    if (hasStrength && !hasWeakness) return 'strong'
+    if (hasWeakness && !hasStrength) return 'weak'
+    return null
+  }
+
+  const getConvictionClass = (power: number) => {
+    if (power >= 8) return 'conviction-high'
+    if (power >= 6) return 'conviction-medium'
+    return 'conviction-low'
+  }
+
+  const selectArgument = (argument: DebateArgument) => {
+    selectedArgument.value = argument
+  }
+
+  const makeArgument = () => {
+    if (!selectedArgument.value) return
+
+    userArguments.value.push(selectedArgument.value)
+
+    // Simulate opponent response
+    setTimeout(() => {
+      opponentResponse.value = generateOpponentResponse(selectedArgument.value!)
+      selectedArgument.value = null
+
+      if (currentRound.value >= debateConfig.value.max_rounds) {
+        completeDebate()
+      } else {
+        currentRound.value++
+        // Clear opponent response for next round
+        setTimeout(() => {
+          opponentResponse.value = null
+        }, 3000)
       }
-    } catch (e) {
-      // Ignore parsing errors
-    }
+    }, 1000)
   }
-})
+
+  const generateOpponentResponse = (userArgument: DebateArgument) => {
+    const responses = [
+      `Twój argument o ${userArgument.philosophical_basis.toLowerCase()} pomija ważne aspekty...`,
+      `Choć ${userArgument.philosophical_basis} ma swoje zalety, nie uwzględnia...`,
+      `Twoje stanowisko oparte na ${userArgument.philosophical_basis.toLowerCase()} można skrytykować...`,
+    ]
+    return responses[Math.floor(Math.random() * responses.length)]
+  }
+
+  const completeDebate = () => {
+    isCompleted.value = true
+
+    // Calculate results
+    const totalConviction = userArguments.value.reduce((sum, arg) => sum + arg.conviction_power, 0)
+    const averageConviction = totalConviction / userArguments.value.length
+    const convictionScore = Math.round(averageConviction * 10)
+
+    finalResult.value = {
+      winner: convictionScore >= 70 ? 'user' : 'opponent',
+      totalRounds: currentRound.value,
+      conviction_score: convictionScore,
+      learning_insights: [
+        'Rozważyłeś różne perspektywy filozoficzne',
+        'Nauczyłeś się argumentować swoją pozycję',
+        'Poznałeś kontrastujące podejścia do etyki'
+      ],
+      philosophical_growth: [
+        { concept: 'logical-reasoning', understanding: Math.min(100, convictionScore + 20) },
+        { concept: 'ethical-thinking', understanding: Math.min(100, convictionScore + 15) }
+      ]
+    }
+
+    // Emit the result
+    emit('answer-changed', [JSON.stringify(finalResult.value)])
+  }
+
+  onMounted(() => {
+    // If we have an existing answer, restore the debate state
+    if (props.userAnswer.length > 0) {
+      try {
+        const savedResult = JSON.parse(props.userAnswer[0])
+        if (savedResult.winner) {
+          finalResult.value = savedResult
+          isCompleted.value = true
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  })
 </script>
 
 <style scoped>

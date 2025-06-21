@@ -93,136 +93,139 @@
               </div>
 
               <!-- Interactive Content -->
-              <div v-else-if="currentSection.type === 'interactive'" class="space-y-6">
-                <div class="prose prose-lg max-w-none">
-                  <div v-html="formatContent(currentSection.content)"></div>
-                </div>
+              <InteractiveSection v-if="currentSection.type === 'interactive'"
+                                  :section="currentSection"
+                                  :lessonId="lesson.id"
+                                  class="mb-8" />
 
-                <!-- Reflection Prompts -->
-                <div v-if="currentSection.interactionType === 'reflection' && currentSection.interactionData?.prompts"
-                     class="bg-primary-50 p-6 rounded-lg">
-                  <h3 class="text-lg font-medium text-primary-900 mb-4">💭 Czas na refleksję</h3>
-                  <div class="space-y-4">
-                    <div v-for="(prompt, index) in currentSection.interactionData.prompts" :key="index" class="space-y-2">
-                      <label class="block text-sm font-medium text-primary-800">{{ prompt }}</label>
-                      <textarea v-model="reflectionResponses[index]"
-                                class="w-full px-3 py-2 border border-primary-200 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                                rows="3"
-                                :placeholder="'Napisz swoje przemyślenia...'"></textarea>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Concept Map -->
-                <div v-else-if="currentSection.interactionType === 'concept-map'"
-                     class="bg-purple-50 p-6 rounded-lg">
-                  <h3 class="text-lg font-medium text-purple-900 mb-4">🗺️ Mapa pojęć</h3>
-                  <div class="text-sm text-purple-700 mb-4">
-                    Połącz poniższe koncepcje i wyjaśnij ich relacje:
-                  </div>
-                  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div v-for="concept in lesson.philosophicalConcepts" :key="concept"
-                         class="bg-white p-3 rounded border border-purple-200 text-center">
-                      {{ formatConcept(concept) }}
-                    </div>
-                  </div>
-                  <textarea v-model="conceptMapResponse"
-                            class="mt-4 w-full px-3 py-2 border border-purple-200 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                            rows="4"
-                            placeholder="Opisz jak te koncepcje się ze sobą łączą..."></textarea>
-                </div>
-
-                <!-- Timeline -->
-                <div v-else-if="currentSection.interactionType === 'timeline'"
-                     class="bg-yellow-50 p-6 rounded-lg">
-                  <h3 class="text-lg font-medium text-yellow-900 mb-4">📅 Linia czasu</h3>
-                  <div class="text-sm text-yellow-700 mb-4">
-                    Umieść wydarzenia w chronologicznym porządku:
-                  </div>
-                  <!-- Simple timeline placeholder -->
-                  <div class="space-y-2">
-                    <div class="bg-white p-3 rounded border border-yellow-200">
-                      Wydarzenia do uporządkowania będą tutaj...
-                    </div>
+              <!-- Reflection Prompts -->
+              <div v-if="currentSection.interactionType === 'reflection' && currentSection.interactionData?.prompts"
+                   class="bg-primary-50 p-6 rounded-lg">
+                <h3 class="text-lg font-medium text-primary-900 mb-4">💭 Czas na refleksję</h3>
+                <div class="space-y-4">
+                  <div v-for="(prompt, index) in currentSection.interactionData.prompts" :key="index" class="space-y-2">
+                    <label class="block text-sm font-medium text-primary-800">{{ prompt }}</label>
+                    <textarea v-model="reflectionResponses[index]"
+                              class="w-full px-3 py-2 border border-primary-200 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                              rows="3"
+                              :placeholder="'Napisz swoje przemyślenia...'"></textarea>
                   </div>
                 </div>
               </div>
 
-              <!-- Video Content -->
-              <div v-else-if="currentSection.type === 'video' && currentSection.mediaUrl" class="space-y-6">
-                <div class="prose prose-lg max-w-none">
-                  <div v-html="formatContent(currentSection.content)"></div>
+              <!-- Concept Map -->
+              <div v-else-if="currentSection.interactionType === 'concept-map'"
+                   class="bg-purple-50 p-6 rounded-lg">
+                <h3 class="text-lg font-medium text-purple-900 mb-4">🗺️ Mapa pojęć</h3>
+                <div class="text-sm text-purple-700 mb-4">
+                  Połącz poniższe koncepcje i wyjaśnij ich relacje:
                 </div>
-                <div class="bg-gray-100 p-4 rounded-lg">
-                  <div class="text-center text-gray-600">
-                    🎥 Video: {{ currentSection.mediaUrl }}
-                    <div class="text-sm mt-2">(Video integration to be implemented)</div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div v-for="concept in lesson.philosophicalConcepts" :key="concept"
+                       class="bg-white p-3 rounded border border-purple-200 text-center">
+                    {{ formatConcept(concept) }}
                   </div>
                 </div>
+                <textarea v-model="conceptMapResponse"
+                          class="mt-4 w-full px-3 py-2 border border-purple-200 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                          rows="4"
+                          placeholder="Opisz jak te koncepcje się ze sobą łączą..."></textarea>
               </div>
 
-              <!-- Image Content -->
-              <div v-else-if="currentSection.type === 'image' && currentSection.mediaUrl" class="space-y-6">
-                <div class="prose prose-lg max-w-none">
-                  <div v-html="formatContent(currentSection.content)"></div>
+              <!-- Timeline -->
+              <div v-else-if="currentSection.interactionType === 'timeline'"
+                   class="bg-yellow-50 p-6 rounded-lg">
+                <h3 class="text-lg font-medium text-yellow-900 mb-4">📅 Linia czasu</h3>
+                <div class="text-sm text-yellow-700 mb-4">
+                  Umieść wydarzenia w chronologicznym porządku:
                 </div>
-                <div class="text-center">
-                  <img :src="currentSection.mediaUrl"
-                       :alt="currentSection.title"
-                       class="max-w-full h-auto rounded-lg shadow-md mx-auto"
-                       @error="handleImageError">
+                <!-- Simple timeline placeholder -->
+                <div class="space-y-2">
+                  <div class="bg-white p-3 rounded border border-yellow-200">
+                    Wydarzenia do uporządkowania będą tutaj...
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Navigation -->
-          <div class="px-8 py-6 bg-gray-50 rounded-b-lg flex justify-between items-center">
-            <button @click="previousSection"
-                    :disabled="currentSectionIndex === 0"
-                    class="btn-secondary"
-                    :class="{ 'opacity-50 cursor-not-allowed': currentSectionIndex === 0 }">
-              ← Poprzednia sekcja
-            </button>
-
-            <div class="text-sm text-gray-600">
-              Sekcja {{ currentSectionIndex + 1 }} z {{ lesson.content.sections.length }}
+            <!-- Video Content -->
+            <div v-else-if="currentSection.type === 'video' && currentSection.mediaUrl" class="space-y-6">
+              <div class="prose prose-lg max-w-none">
+                <div v-html="formatContent(currentSection.content)"></div>
+              </div>
+              <div class="bg-gray-100 p-4 rounded-lg">
+                <div class="text-center text-gray-600">
+                  🎥 Video: {{ currentSection.mediaUrl }}
+                  <div class="text-sm mt-2">(Video integration to be implemented)</div>
+                </div>
+              </div>
             </div>
 
-            <button v-if="currentSectionIndex < lesson.content.sections.length - 1"
-                    @click="nextSection"
-                    class="btn-primary">
-              Następna sekcja →
-            </button>
-
-            <button v-else @click="completeLesson" class="btn-primary bg-green-600 hover:bg-green-700">
-              Zakończ lekcję i przejdź do quizu →
-            </button>
+            <!-- Image Content -->
+            <div v-else-if="currentSection.type === 'image' && currentSection.mediaUrl" class="space-y-6">
+              <div class="prose prose-lg max-w-none">
+                <div v-html="formatContent(currentSection.content)"></div>
+              </div>
+              <div class="text-center">
+                <img :src="currentSection.mediaUrl"
+                     :alt="currentSection.title"
+                     class="max-w-full h-auto rounded-lg shadow-md mx-auto"
+                     @error="handleImageError">
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Complete Lesson Modal -->
-    <div v-if="showCompleteModal"
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-         @click="closeCompleteModal">
-      <div class="bg-white rounded-lg max-w-md w-full p-6" @click.stop>
-        <h3 class="text-lg font-medium text-gray-900 mb-4">🎉 Gratulacje!</h3>
-        <p class="text-gray-600 mb-6">
-          Ukończyłeś lekcję "{{ lesson?.title }}". Czy chcesz przejść do quizu?
-        </p>
-        <div class="flex justify-end space-x-3">
-          <button @click="closeCompleteModal" class="btn-secondary">
-            Później
+        <!-- Navigation -->
+        <div class="px-8 py-6 bg-gray-50 rounded-b-lg flex justify-between items-center">
+          <button @click="previousSection"
+                  :disabled="currentSectionIndex === 0"
+                  class="btn-secondary"
+                  :class="{ 'opacity-50 cursor-not-allowed': currentSectionIndex === 0 }">
+            ← Poprzednia sekcja
           </button>
-          <button @click="goToQuiz" class="btn-primary">
-            Przejdź do quizu
+
+          <div class="text-sm text-gray-600">
+            Sekcja {{ currentSectionIndex + 1 }} z {{ lesson.content.sections.length }}
+          </div>
+
+          <button v-if="currentSectionIndex < lesson.content.sections.length - 1"
+                  @click="nextSection"
+                  class="btn-primary">
+            Następna sekcja →
+          </button>
+
+          <button v-else @click="completeLesson" class="btn-primary bg-green-600 hover:bg-green-700">
+            Zakończ lekcję i przejdź do quizu →
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Complete Lesson Modal -->
+  <div v-if="showCompleteModal"
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+       @click="closeCompleteModal">
+    <div class="bg-white rounded-lg max-w-md w-full p-6" @click.stop>
+      <h3 class="text-lg font-medium text-gray-900 mb-4">🎉 Gratulacje!</h3>
+      <p class="text-gray-600 mb-6">
+        Ukończyłeś lekcję "{{ lesson?.title }}". Czy chcesz przejść do quizu?
+      </p>
+      <div class="flex justify-end space-x-3">
+        <button @click="closeCompleteModal" class="btn-secondary">
+          Później
+        </button>
+        <button @click="goToQuiz" class="btn-primary">
+          Przejdź do quizu
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+  <InteractiveScenariosPanel v-if="lesson"
+                             :lesson-id="lesson.id"
+                             class="mt-8" />
 </template>
 
 <script setup lang="ts">
@@ -230,7 +233,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useLessonsStore } from '@/stores/lessons'
 import { useProfileStore } from '@/stores/profile'
-import type { Lesson } from '@/services/lessonApi'
+  import type { Lesson } from '@/services/lessonApi'
+  import InteractiveSection from '@/components/lessons/InteractiveSection.vue'
+  import InteractiveScenariosPanel from '@/components/interactive/InteractiveScenariosPanel.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -11,6 +11,7 @@ namespace CritiQuest2.Server.Model.Entities
     }
     public class Lesson
     {
+        [MaxLength(100)]
         public string Id { get; set; } = string.Empty; // np. "stoicism-intro"
 
         [MaxLength(200)]
@@ -50,8 +51,11 @@ namespace CritiQuest2.Server.Model.Entities
 
     public class LessonProgress
     {
+        [MaxLength(100)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        [MaxLength(450)]
         public string UserId { get; set; } = string.Empty;
+        [MaxLength(100)]
         public string LessonId { get; set; } = string.Empty;
 
         public ApplicationUser User { get; set; } = null!;

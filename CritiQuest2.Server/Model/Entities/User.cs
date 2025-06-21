@@ -24,7 +24,9 @@ namespace CritiQuest2.Server.Model.Entities
 
     public class UserProgression
     {
+        [MaxLength(100)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        [MaxLength(450)]
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = null!;
 
@@ -40,7 +42,9 @@ namespace CritiQuest2.Server.Model.Entities
 
     public class UserStats
     {
+        [MaxLength(100)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        [MaxLength(450)]
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = null!;
 

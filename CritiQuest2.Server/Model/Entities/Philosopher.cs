@@ -12,6 +12,7 @@ namespace CritiQuest2.Server.Model.Entities
     }
     public class Philosopher
     {
+        [MaxLength(100)]
         public string Id { get; set; } = string.Empty; // np. "marcus-aurelius"
 
         [MaxLength(100)]
@@ -47,8 +48,11 @@ namespace CritiQuest2.Server.Model.Entities
 
     public class OwnedPhilosopher
     {
+        [MaxLength(100)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        [MaxLength(450)]
         public string UserId { get; set; } = string.Empty;
+        [MaxLength(100)]
         public string PhilosopherId { get; set; } = string.Empty;
 
         public ApplicationUser User { get; set; } = null!;

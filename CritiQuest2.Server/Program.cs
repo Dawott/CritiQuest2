@@ -59,6 +59,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IDatabaseSeedingService, DatabaseSeedingService>();
 builder.Services.AddAutoMapper(typeof(Program));
 
 
@@ -82,12 +83,39 @@ app.MapControllers();
 
 app.MapFallbackToFile("/index.html");
 
-using (var scope = app.Services.CreateScope())
+try
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Upewniam sie czy baza istnieje...");
+        await context.Database.EnsureCreatedAsync();
 
+        
+        if (app.Environment.IsProduction())
+        {
+            logger.LogInformation("Ruszam z migracjami...");
+            await context.Database.MigrateAsync();
+        }
+
+        // Seed
+        logger.LogInformation("Zaczynam seed bazy...");
+        await app.Services.SeedDatabaseAsync();
+        logger.LogInformation("Seedin zakonczony!");
+    }
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetService<ILogger<Program>>();
+    logger?.LogError(ex, "Blad seedowania bazy");
+
+    // In development, we might want to see the error
+    if (app.Environment.IsDevelopment())
+    {
+        throw;
+    }
 }
 
 app.Run();

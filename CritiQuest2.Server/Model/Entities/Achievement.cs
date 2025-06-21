@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CritiQuest2.Server.Model.Entities
 {
     public class Achievement
     {
+        [MaxLength(100)]
         public string Id { get; set; } = string.Empty; // np. "first-perfect-score"
 
         [MaxLength(200)]
@@ -27,8 +29,11 @@ namespace CritiQuest2.Server.Model.Entities
 
     public class AchievementProgress
     {
+        [MaxLength(100)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        [MaxLength(450)]
         public string UserId { get; set; } = string.Empty;
+        [MaxLength(100)]
         public string AchievementId { get; set; } = string.Empty;
 
         public ApplicationUser User { get; set; } = null!;
@@ -40,6 +45,7 @@ namespace CritiQuest2.Server.Model.Entities
         public DateTime? UnlockedAt { get; set; }
         public bool Viewed { get; set; } = false;
 
+        [NotMapped]
         public decimal Progress => TargetValue > 0 ? (decimal)CurrentValue / TargetValue * 100 : 0;
     }
 }

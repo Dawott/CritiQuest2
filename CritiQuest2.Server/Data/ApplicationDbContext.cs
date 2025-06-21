@@ -9,8 +9,6 @@ namespace CritiQuest2.Server.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-
-        // DbSets
         public DbSet<UserProgression> UserProgressions { get; set; }
         public DbSet<UserStats> UserStats { get; set; }
         public DbSet<Philosopher> Philosophers { get; set; }
@@ -19,6 +17,11 @@ namespace CritiQuest2.Server.Data
         public DbSet<LessonProgress> LessonProgress { get; set; }
         public DbSet<Achievement> Achievements { get; set; }
         public DbSet<AchievementProgress> AchievementProgress { get; set; }
+        public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<QuizAttempt> QuizAttempts { get; set; }
+        public DbSet<QuestionAnswer> QuestionAnswers { get; set; }
+        public DbSet<DebateArgument> DebateArguments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -77,7 +80,38 @@ namespace CritiQuest2.Server.Data
                 .HasForeignKey(ap => ap.AchievementId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Indexes for performance
+            // Quiz relationships
+            builder.Entity<Question>()
+                .HasOne(q => q.Quiz)
+                .WithMany(qz => qz.Questions)
+                .HasForeignKey(q => q.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<QuizAttempt>()
+                .HasOne(qa => qa.User)
+                .WithMany()
+                .HasForeignKey(qa => qa.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<QuizAttempt>()
+                .HasOne(qa => qa.Quiz)
+                .WithMany(q => q.Attempts)
+                .HasForeignKey(qa => qa.QuizId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<QuestionAnswer>()
+                .HasOne(qa => qa.QuizAttempt)
+                .WithMany(qza => qza.Answers)
+                .HasForeignKey(qa => qa.QuizAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<QuestionAnswer>()
+                .HasOne(qa => qa.Question)
+                .WithMany()
+                .HasForeignKey(qa => qa.QuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indeksowanie
             builder.Entity<ApplicationUser>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
@@ -94,6 +128,12 @@ namespace CritiQuest2.Server.Data
                 .HasIndex(ap => new { ap.UserId, ap.AchievementId })
                 .IsUnique();
 
+            builder.Entity<QuizAttempt>()
+                .HasIndex(qa => new { qa.UserId, qa.QuizId, qa.StartedAt });
+
+            builder.Entity<Question>()
+                .HasIndex(q => new { q.QuizId, q.Order });
+
             // Configure enum conversions
             builder.Entity<Philosopher>()
                 .Property(p => p.Rarity)
@@ -103,7 +143,16 @@ namespace CritiQuest2.Server.Data
                 .Property(l => l.Difficulty)
                 .HasConversion<int>();
 
-            // Seed data will be added later
+            builder.Entity<Quiz>()
+                .Property(q => q.Type)
+                .HasConversion<int>();
+
+            builder.Entity<Question>()
+                .Property(q => q.Type)
+                .HasConversion<int>();
+
+            builder.Entity<AchievementProgress>()
+                .Ignore(ap => ap.Progress);
         }
     }
 }

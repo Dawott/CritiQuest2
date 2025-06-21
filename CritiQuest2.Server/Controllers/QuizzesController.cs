@@ -5,6 +5,7 @@ using CritiQuest2.Server.Data;
 using CritiQuest2.Server.Model.Entities;
 using System.Security.Claims;
 using System.Text.Json;
+using CritiQuest2.Server.Extensions;
 
 namespace CritiQuest2.Server.Controllers
 {
@@ -47,19 +48,19 @@ namespace CritiQuest2.Server.Controllers
                         q.PassingScore,
                         PhilosopherBonus = string.IsNullOrEmpty(q.PhilosopherBonusJson)
                             ? null
-                            : JsonSerializer.Deserialize<object>(q.PhilosopherBonusJson),
+                            : q.PhilosopherBonusJson.DeserializeObject(),
                         Questions = q.Questions.Select(qu => new
                         {
                             qu.Id,
                             qu.Text,
                             qu.Type,
-                            Options = JsonSerializer.Deserialize<string[]>(qu.OptionsJson),
+                            Options = qu.OptionsJson.DeserializeStringArray(),
                             qu.PhilosophicalContext,
                             qu.Points,
                             qu.Order,
                             DebateConfig = string.IsNullOrEmpty(qu.DebateConfigJson)
                                 ? null
-                                : JsonSerializer.Deserialize<object>(qu.DebateConfigJson)
+                                : qu.DebateConfigJson.DeserializeObject()
                         }).ToList(),
                         UserAttempts = _context.QuizAttempts
                             .Where(qa => qa.UserId == userId && qa.QuizId == id)

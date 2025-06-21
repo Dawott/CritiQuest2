@@ -124,12 +124,12 @@ namespace CritiQuest2.Server.Controllers
                     },
                     Stats = new
                     {
-                        user.Stats?.TotalTimeSpent ?? 0,
-                        user.Stats?.StreakDays ?? 0,
-                        user.Stats?.LastStreakUpdate ?? DateTime.UtcNow,
-                        user.Stats?.QuizzesCompleted ?? 0,
-                        user.Stats?.PerfectScores ?? 0,
-                        user.Stats?.GachaTickets ?? 0
+                        TotalTimeSpent = user.Stats?.TotalTimeSpent ?? 0,
+                        StreakDays = user.Stats?.StreakDays ?? 0,
+                        LastStreakUpdate = user.Stats?.LastStreakUpdate ?? DateTime.UtcNow,
+                        QuizzesCompleted = user.Stats?.QuizzesCompleted ?? 0,
+                        PerfectScores = user.Stats?.PerfectScores ?? 0,
+                        GachaTickets = user.Stats?.GachaTickets ?? 0
                     },
                     PhilosopherCollection = user.PhilosopherCollection.Select(pc => new
                     {
@@ -198,12 +198,12 @@ namespace CritiQuest2.Server.Controllers
 
                 return Ok(new
                 {
-                    stats?.TotalTimeSpent ?? 0,
-                    stats?.StreakDays ?? 0,
-                    stats?.LastStreakUpdate ?? DateTime.UtcNow,
-                    stats?.QuizzesCompleted ?? 0,
-                    stats?.PerfectScores ?? 0,
-                    stats?.GachaTickets ?? 0,
+                    TotalTimeSpent = stats?.TotalTimeSpent ?? 0,
+                    StreakDays = stats?.StreakDays ?? 0,
+                    LastStreakUpdate = stats?.LastStreakUpdate ?? DateTime.UtcNow,
+                    QuizzesCompleted = stats?.QuizzesCompleted ?? 0,
+                    PerfectScores = stats?.PerfectScores ?? 0,
+                    GachaTickets = stats?.GachaTickets ?? 0,
                     CompletedLessons = completedLessonsCount,
                     PhilosopherCount = philosopherCount,
                     CompletedAchievements = completedAchievements,
@@ -292,7 +292,7 @@ namespace CritiQuest2.Server.Controllers
                     }
                 }
 
-                return Ok(new { streak = userStats?.StreakDays ?? 0 });
+                return Ok(new { Streak = userStats?.StreakDays ?? 0 });
             }
             catch (Exception ex)
             {

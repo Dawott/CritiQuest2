@@ -5,6 +5,7 @@ using CritiQuest2.Server.Data;
 using CritiQuest2.Server.Model.Entities;
 using System.Security.Claims;
 using System.Text.Json;
+using CritiQuest2.Server.Extensions;
 
 namespace CritiQuest2.Server.Controllers
 {
@@ -52,14 +53,14 @@ namespace CritiQuest2.Server.Controllers
                         l.Order,
                         l.Difficulty,
                         l.EstimatedTime,
-                        PhilosophicalConcepts = JsonSerializer.Deserialize<string[]>(l.PhilosophicalConceptsJson),
+                        PhilosophicalConcepts = l.PhilosophicalConceptsJson.DeserializeStringArray(),
                         l.RequiredPhilosopher,
                         l.QuizId,
                         Rewards = new
                         {
                             Xp = l.RewardXp,
                             Coins = l.RewardCoins,
-                            UnlockedContent = JsonSerializer.Deserialize<string[]>(l.RewardContentJson)
+                            UnlockedContent = l.RewardContentJson.DeserializeStringArray()
                         },
                         UserProgress = _context.LessonProgress
                             .Where(lp => lp.UserId == userId && lp.LessonId == l.Id)
@@ -109,15 +110,15 @@ namespace CritiQuest2.Server.Controllers
                         l.Order,
                         l.Difficulty,
                         l.EstimatedTime,
-                        PhilosophicalConcepts = JsonSerializer.Deserialize<string[]>(l.PhilosophicalConceptsJson),
+                        PhilosophicalConcepts = l.PhilosophicalConceptsJson.DeserializeStringArray(),
                         l.RequiredPhilosopher,
-                        Content = JsonSerializer.Deserialize<object>(l.ContentJson),
+                        Content = l.ContentJson.DeserializeObject(),
                         l.QuizId,
                         Rewards = new
                         {
                             Xp = l.RewardXp,
                             Coins = l.RewardCoins,
-                            UnlockedContent = JsonSerializer.Deserialize<string[]>(l.RewardContentJson)
+                            UnlockedContent = l.RewardContentJson.DeserializeStringArray()
                         },
                         UserProgress = _context.LessonProgress
                             .Where(lp => lp.UserId == userId && lp.LessonId == l.Id)

@@ -5,6 +5,7 @@ using CritiQuest2.Server.Data;
 using CritiQuest2.Server.Model.Entities;
 using System.Security.Claims;
 using System.Text.Json;
+using CritiQuest2.Server.Extensions;
 
 namespace CritiQuest2.Server.Controllers
 {
@@ -52,8 +53,8 @@ namespace CritiQuest2.Server.Controllers
                         },
                         p.Description,
                         p.ImageUrl,
-                        Quotes = JsonSerializer.Deserialize<string[]>(p.QuotesJson),
-                        SpecialAbility = JsonSerializer.Deserialize<object>(p.SpecialAbilityJson),
+                        Quotes = p.QuotesJson.DeserializeStringArray(),
+                        SpecialAbility = p.SpecialAbilityJson.DeserializeObject(),
                         IsOwned = _context.OwnedPhilosophers
                             .Any(op => op.UserId == userId && op.PhilosopherId == p.Id),
                         UserData = _context.OwnedPhilosophers
@@ -135,8 +136,8 @@ namespace CritiQuest2.Server.Controllers
                             },
                             op.Philosopher.Description,
                             op.Philosopher.ImageUrl,
-                            Quotes = JsonSerializer.Deserialize<string[]>(op.Philosopher.QuotesJson),
-                            SpecialAbility = JsonSerializer.Deserialize<object>(op.Philosopher.SpecialAbilityJson)
+                            Quotes = op.Philosopher.QuotesJson.DeserializeStringArray(),
+                            SpecialAbility = op.Philosopher.SpecialAbilityJson.DeserializeObject()
                         }
                     })
                     .OrderByDescending(op => op.Philosopher.Rarity)
@@ -183,8 +184,8 @@ namespace CritiQuest2.Server.Controllers
                         },
                         p.Description,
                         p.ImageUrl,
-                        Quotes = JsonSerializer.Deserialize<string[]>(p.QuotesJson),
-                        SpecialAbility = JsonSerializer.Deserialize<object>(p.SpecialAbilityJson),
+                        Quotes = p.QuotesJson.DeserializeStringArray(),
+                        SpecialAbility = p.SpecialAbilityJson.DeserializeObject(),
                         IsOwned = _context.OwnedPhilosophers
                             .Any(op => op.UserId == userId && op.PhilosopherId == p.Id),
                         UserData = _context.OwnedPhilosophers

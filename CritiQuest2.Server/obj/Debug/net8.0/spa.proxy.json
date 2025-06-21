@@ -1,0 +1,10 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:59279",
+"RedirectUrl": "",
+"LaunchCommand": "npm run dev",
+"WorkingDirectory": "C:\\Users\\dawid\\source\\repos\\CritiQuest2\\CritiQuest2.Server\\..\\critiquest2.client",
+"MaxTimeoutInSeconds": "120",
+"KeepRunning": "false"
+}
+}

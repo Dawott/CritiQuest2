@@ -1,321 +1,233 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using CritiQuest2.Server.Data;
+using CritiQuest2.Server.Model.DTOs;
+using CritiQuest2.Server.Model.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CritiQuest2.Server.Data;
-using CritiQuest2.Server.Model.Entities;
 using System.Security.Claims;
 using System.Text.Json;
-using CritiQuest2.Server.Extensions;
 
 namespace CritiQuest2.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class QuizzesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<QuizzesController> _logger;
 
-        public QuizzesController(ApplicationDbContext context, ILogger<QuizzesController> logger)
+        public QuizzesController(ApplicationDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
-        /// <summary>
-        /// Get quiz by ID with questions
-        /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetQuiz(string id)
+        public async Task<ActionResult<QuizDto>> GetQuiz(string id)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            try
+            var quiz = await _context.Quizzes
+                .Include(q => q.Questions)
+                .FirstOrDefaultAsync(q => q.Id == id);
+
+            if (quiz == null)
+                return NotFound();
+
+            // Get user's previous attempts
+            var userAttempts = await _context.QuizAttempts
+                .Where(qa => qa.QuizId == id && qa.UserId == userId)
+                .OrderByDescending(qa => qa.StartedAt)
+                .ToListAsync();
+
+            return Ok(new QuizDto
             {
-                var quiz = await _context.Quizzes
-                    .Include(q => q.Questions.OrderBy(qu => qu.Order))
-                    .Where(q => q.Id == id)
-                    .Select(q => new
-                    {
-                        q.Id,
-                        q.LessonId,
-                        q.Title,
-                        q.Type,
-                        q.TimeLimit,
-                        q.PassingScore,
-                        PhilosopherBonus = string.IsNullOrEmpty(q.PhilosopherBonusJson)
-                            ? null
-                            : q.PhilosopherBonusJson.DeserializeObject(),
-                        Questions = q.Questions.Select(qu => new
-                        {
-                            qu.Id,
-                            qu.Text,
-                            qu.Type,
-                            Options = qu.OptionsJson.DeserializeStringArray(),
-                            qu.PhilosophicalContext,
-                            qu.Points,
-                            qu.Order,
-                            DebateConfig = string.IsNullOrEmpty(qu.DebateConfigJson)
-                                ? null
-                                : qu.DebateConfigJson.DeserializeObject()
-                        }).ToList(),
-                        UserAttempts = _context.QuizAttempts
-                            .Where(qa => qa.UserId == userId && qa.QuizId == id)
-                            .Select(qa => new
-                            {
-                                qa.Id,
-                                qa.StartedAt,
-                                qa.CompletedAt,
-                                qa.Score,
-                                qa.TimeSpent,
-                                qa.Passed
-                            })
-                            .OrderByDescending(qa => qa.StartedAt)
-                            .Take(5)
-                            .ToList()
-                    })
-                    .FirstOrDefaultAsync();
-
-                if (quiz == null)
-                    return NotFound();
-
-                return Ok(quiz);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching quiz {QuizId} for user {UserId}", id, userId);
-                return StatusCode(500, new { message = "Error fetching quiz" });
-            }
+                Id = quiz.Id,
+                LessonId = quiz.LessonId,
+                Title = quiz.Title,
+                Type = quiz.Type.ToString(),
+                TimeLimit = quiz.TimeLimit,
+                PassingScore = quiz.PassingScore,
+                PhilosopherBonus = string.IsNullOrEmpty(quiz.PhilosopherBonusJson)
+                    ? null
+                    : JsonSerializer.Deserialize<object>(quiz.PhilosopherBonusJson),
+                Questions = quiz.Questions.OrderBy(q => q.Order).Select(q => new QuestionDto
+                {
+                    Id = q.Id,
+                    Text = q.Text,
+                    Type = q.Type.ToString(),
+                    Options = JsonSerializer.Deserialize<string[]>(q.OptionsJson) ?? [],
+                    PhilosophicalContext = q.PhilosophicalContext,
+                    Points = q.Points,
+                    Order = q.Order,
+                    DebateConfig = string.IsNullOrEmpty(q.DebateConfigJson)
+                        ? null
+                        : JsonSerializer.Deserialize<object>(q.DebateConfigJson)
+                }).ToList(),
+                UserAttempts = userAttempts.Select(ua => new QuizAttemptDto
+                {
+                    Id = ua.Id,
+                    StartedAt = ua.StartedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    CompletedAt = ua.CompletedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    Score = ua.Score,
+                    TimeSpent = ua.TimeSpent,
+                    Passed = ua.Passed
+                }).ToList()
+            });
         }
 
-        /// <summary>
-        /// Start a new quiz attempt
-        /// </summary>
         [HttpPost("{id}/start")]
-        public async Task<IActionResult> StartQuizAttempt(string id)
+        public async Task<ActionResult<StartAttemptResponse>> StartAttempt(string id)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            try
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null)
+                return NotFound();
+
+            var attempt = new QuizAttempt
             {
-                var quiz = await _context.Quizzes.FindAsync(id);
-                if (quiz == null)
-                    return NotFound();
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                QuizId = id,
+                StartedAt = DateTime.UtcNow,
+                AnswersJson = "[]",
+                Score = 0,
+                TimeSpent = 0,
+                Passed = false
+            };
 
-                var attempt = new QuizAttempt
-                {
-                    UserId = userId,
-                    QuizId = id,
-                    StartedAt = DateTime.UtcNow
-                };
+            _context.QuizAttempts.Add(attempt);
+            await _context.SaveChangesAsync();
 
-                _context.QuizAttempts.Add(attempt);
-                await _context.SaveChangesAsync();
-
-                return Ok(new { attemptId = attempt.Id });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting quiz attempt for quiz {QuizId} by user {UserId}", id, userId);
-                return StatusCode(500, new { message = "Error starting quiz attempt" });
-            }
+            return Ok(new StartAttemptResponse { AttemptId = attempt.Id });
         }
 
-        /// <summary>
-        /// Submit quiz attempt with answers
-        /// </summary>
         [HttpPost("{id}/submit")]
-        public async Task<IActionResult> SubmitQuizAttempt(string id, [FromBody] QuizSubmissionRequest request)
+        public async Task<ActionResult<QuizResultDto>> SubmitQuiz(string id, [FromBody] QuizSubmissionDto submission)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            try
+            var attempt = await _context.QuizAttempts
+                .Include(qa => qa.Quiz)
+                .ThenInclude(q => q.Questions)
+                .FirstOrDefaultAsync(qa => qa.Id == submission.AttemptId && qa.UserId == userId);
+
+            if (attempt == null)
+                return NotFound();
+
+            // Calculate score
+            var questionResults = new List<QuestionResultDto>();
+            var totalPoints = 0;
+            var earnedPoints = 0;
+
+            foreach (var question in attempt.Quiz.Questions.OrderBy(q => q.Order))
             {
-                var quiz = await _context.Quizzes
-                    .Include(q => q.Questions)
-                    .FirstOrDefaultAsync(q => q.Id == id);
+                var correctAnswers = JsonSerializer.Deserialize<string[]>(question.CorrectAnswersJson) ?? [];
+                var userAnswer = submission.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
+                var userAnswers = userAnswer?.SelectedAnswers ?? [];
 
-                if (quiz == null)
-                    return NotFound();
+                var isCorrect = AreAnswersEqual(correctAnswers, userAnswers);
+                var pointsEarned = isCorrect ? question.Points : 0;
 
-                var attempt = await _context.QuizAttempts
-                    .FirstOrDefaultAsync(qa => qa.Id == request.AttemptId && qa.UserId == userId);
+                totalPoints += question.Points;
+                earnedPoints += pointsEarned;
 
-                if (attempt == null)
-                    return NotFound("Quiz attempt not found");
-
-                // Calculate score
-                int totalPoints = 0;
-                int earnedPoints = 0;
-                var questionAnswers = new List<QuestionAnswer>();
-
-                foreach (var question in quiz.Questions)
+                questionResults.Add(new QuestionResultDto
                 {
-                    totalPoints += question.Points;
-                    var userAnswer = request.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
-
-                    if (userAnswer != null)
-                    {
-                        var correctAnswers = JsonSerializer.Deserialize<string[]>(question.CorrectAnswersJson) ?? new string[0];
-                        var isCorrect = AreAnswersCorrect(userAnswer.SelectedAnswers, correctAnswers);
-                        var pointsEarned = isCorrect ? question.Points : 0;
-                        earnedPoints += pointsEarned;
-
-                        questionAnswers.Add(new QuestionAnswer
-                        {
-                            QuizAttemptId = attempt.Id,
-                            QuestionId = question.Id,
-                            AnswerJson = JsonSerializer.Serialize(userAnswer.SelectedAnswers),
-                            IsCorrect = isCorrect,
-                            PointsEarned = pointsEarned,
-                            AnsweredAt = DateTime.UtcNow
-                        });
-                    }
-                }
-
-                int scorePercentage = totalPoints > 0 ? (int)((double)earnedPoints / totalPoints * 100) : 0;
-                bool passed = scorePercentage >= quiz.PassingScore;
-
-                // Update attempt
-                attempt.CompletedAt = DateTime.UtcNow;
-                attempt.Score = scorePercentage;
-                attempt.TimeSpent = request.TimeSpent;
-                attempt.Passed = passed;
-                attempt.AnswersJson = JsonSerializer.Serialize(request.Answers);
-
-                // Add question answers
-                _context.QuestionAnswers.AddRange(questionAnswers);
-
-                // Update user stats
-                var userStats = await _context.UserStats
-                    .FirstOrDefaultAsync(us => us.UserId == userId);
-
-                if (userStats != null)
-                {
-                    userStats.QuizzesCompleted++;
-                    if (scorePercentage == 100)
-                        userStats.PerfectScores++;
-                }
-
-                await _context.SaveChangesAsync();
-
-                // Return detailed results
-                var results = quiz.Questions.Select(q => {
-                    var userAnswer = request.Answers.FirstOrDefault(a => a.QuestionId == q.Id);
-                    var correctAnswers = JsonSerializer.Deserialize<string[]>(q.CorrectAnswersJson) ?? new string[0];
-                    var isCorrect = userAnswer != null && AreAnswersCorrect(userAnswer.SelectedAnswers, correctAnswers);
-
-                    return new
-                    {
-                        QuestionId = q.Id,
-                        Question = q.Text,
-                        UserAnswers = userAnswer?.SelectedAnswers ?? new string[0],
-                        CorrectAnswers = correctAnswers,
-                        IsCorrect = isCorrect,
-                        Explanation = q.Explanation,
-                        PhilosophicalContext = q.PhilosophicalContext,
-                        Points = isCorrect ? q.Points : 0,
-                        MaxPoints = q.Points
-                    };
-                }).ToList();
-
-                return Ok(new
-                {
-                    AttemptId = attempt.Id,
-                    Score = scorePercentage,
-                    Passed = passed,
-                    EarnedPoints = earnedPoints,
-                    TotalPoints = totalPoints,
-                    TimeSpent = request.TimeSpent,
-                    Results = results
+                    QuestionId = question.Id,
+                    Question = question.Text,
+                    UserAnswers = userAnswers,
+                    CorrectAnswers = correctAnswers,
+                    IsCorrect = isCorrect,
+                    Explanation = question.Explanation,
+                    PhilosophicalContext = question.PhilosophicalContext,
+                    Points = pointsEarned,
+                    MaxPoints = question.Points
                 });
             }
-            catch (Exception ex)
+
+            var scorePercentage = totalPoints > 0 ? (earnedPoints * 100) / totalPoints : 0;
+            var passed = scorePercentage >= attempt.Quiz.PassingScore;
+
+            // Update attempt
+            attempt.AnswersJson = JsonSerializer.Serialize(submission.Answers);
+            attempt.Score = scorePercentage;
+            attempt.TimeSpent = submission.TimeSpent;
+            attempt.Passed = passed;
+            attempt.CompletedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new QuizResultDto
             {
-                _logger.LogError(ex, "Error submitting quiz attempt for quiz {QuizId} by user {UserId}", id, userId);
-                return StatusCode(500, new { message = "Error submitting quiz attempt" });
-            }
+                AttemptId = attempt.Id,
+                Score = scorePercentage,
+                Passed = passed,
+                EarnedPoints = earnedPoints,
+                TotalPoints = totalPoints,
+                TimeSpent = submission.TimeSpent,
+                Results = questionResults
+            });
         }
 
-        /// <summary>
-        /// Get quiz results for a specific attempt
-        /// </summary>
         [HttpGet("attempts/{attemptId}/results")]
-        public async Task<IActionResult> GetQuizResults(string attemptId)
+        public async Task<ActionResult<QuizResultDto>> GetResults(string attemptId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            try
+            var attempt = await _context.QuizAttempts
+                .Include(qa => qa.Quiz)
+                .ThenInclude(q => q.Questions)
+                .FirstOrDefaultAsync(qa => qa.Id == attemptId && qa.UserId == userId);
+
+            if (attempt == null)
+                return NotFound();
+
+            // Rebuild results from stored answers
+            var submissionAnswers = JsonSerializer.Deserialize<List<AnswerDto>>(attempt.AnswersJson) ?? [];
+            var questionResults = new List<QuestionResultDto>();
+
+            foreach (var question in attempt.Quiz.Questions.OrderBy(q => q.Order))
             {
-                var attempt = await _context.QuizAttempts
-                    .Include(qa => qa.Quiz)
-                    .ThenInclude(q => q.Questions)
-                    .Include(qa => qa.Answers)
-                    .ThenInclude(a => a.Question)
-                    .FirstOrDefaultAsync(qa => qa.Id == attemptId && qa.UserId == userId);
+                var correctAnswers = JsonSerializer.Deserialize<string[]>(question.CorrectAnswersJson) ?? [];
+                var userAnswer = submissionAnswers.FirstOrDefault(a => a.QuestionId == question.Id);
+                var userAnswers = userAnswer?.SelectedAnswers ?? [];
 
-                if (attempt == null)
-                    return NotFound();
+                var isCorrect = AreAnswersEqual(correctAnswers, userAnswers);
+                var pointsEarned = isCorrect ? question.Points : 0;
 
-                var results = attempt.Answers.Select(a => new
+                questionResults.Add(new QuestionResultDto
                 {
-                    QuestionId = a.QuestionId,
-                    Question = a.Question.Text,
-                    UserAnswers = JsonSerializer.Deserialize<string[]>(a.AnswerJson),
-                    CorrectAnswers = JsonSerializer.Deserialize<string[]>(a.Question.CorrectAnswersJson),
-                    IsCorrect = a.IsCorrect,
-                    Explanation = a.Question.Explanation,
-                    PhilosophicalContext = a.Question.PhilosophicalContext,
-                    Points = a.PointsEarned,
-                    MaxPoints = a.Question.Points
-                }).ToList();
-
-                return Ok(new
-                {
-                    AttemptId = attempt.Id,
-                    QuizTitle = attempt.Quiz.Title,
-                    Score = attempt.Score,
-                    Passed = attempt.Passed,
-                    TimeSpent = attempt.TimeSpent,
-                    CompletedAt = attempt.CompletedAt,
-                    Results = results
+                    QuestionId = question.Id,
+                    Question = question.Text,
+                    UserAnswers = userAnswers,
+                    CorrectAnswers = correctAnswers,
+                    IsCorrect = isCorrect,
+                    Explanation = question.Explanation,
+                    PhilosophicalContext = question.PhilosophicalContext,
+                    Points = pointsEarned,
+                    MaxPoints = question.Points
                 });
             }
-            catch (Exception ex)
+
+            return Ok(new QuizResultDto
             {
-                _logger.LogError(ex, "Error fetching quiz results for attempt {AttemptId}", attemptId);
-                return StatusCode(500, new { message = "Error fetching quiz results" });
-            }
+                AttemptId = attempt.Id,
+                Score = attempt.Score,
+                Passed = attempt.Passed,
+                EarnedPoints = questionResults.Sum(qr => qr.Points),
+                TotalPoints = questionResults.Sum(qr => qr.MaxPoints),
+                TimeSpent = attempt.TimeSpent,
+                Results = questionResults
+            });
         }
 
-        private bool AreAnswersCorrect(string[] userAnswers, string[] correctAnswers)
+        private static bool AreAnswersEqual(string[] correct, string[] user)
         {
-            if (userAnswers.Length != correctAnswers.Length)
-                return false;
+            if (correct.Length != user.Length) return false;
 
-            return userAnswers.OrderBy(x => x).SequenceEqual(correctAnswers.OrderBy(x => x));
+            var sortedCorrect = correct.OrderBy(a => a).ToArray();
+            var sortedUser = user.OrderBy(a => a).ToArray();
+
+            return sortedCorrect.SequenceEqual(sortedUser);
         }
-    }
-
-    public class QuizSubmissionRequest
-    {
-        public string AttemptId { get; set; } = string.Empty;
-        public int TimeSpent { get; set; } // in seconds
-        public List<QuestionAnswerRequest> Answers { get; set; } = new();
-    }
-
-    public class QuestionAnswerRequest
-    {
-        public string QuestionId { get; set; } = string.Empty;
-        public string[] SelectedAnswers { get; set; } = new string[0];
     }
 }

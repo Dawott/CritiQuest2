@@ -4,6 +4,7 @@ import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import QuizView from '@/views/QuizView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,6 +56,24 @@ const router = createRouter({
       name: 'gacha',
       component: () => import('@/views/GachaView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/quiz/:id',
+      name: 'QuizView',
+      component: QuizView,
+      meta: {
+        requiresAuth: true, 
+        title: 'Quiz'
+      }
+    },
+    {
+      path: '/quiz/:id/results/:attemptId',
+      name: 'QuizResults',
+      component: QuizView, 
+      meta: {
+        requiresAuth: true,
+        title: 'Wyniki Quizu'
+      }
     }
   ]
 })

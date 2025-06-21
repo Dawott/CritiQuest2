@@ -8,6 +8,12 @@ using System.Text.Json;
 
 namespace CritiQuest2.Server.Controllers
 {
+    public class UpdateProfileRequest
+    {
+        public string? DisplayName { get; set; }
+        public string? AvatarUrl { get; set; }
+    }
+
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
@@ -38,7 +44,9 @@ namespace CritiQuest2.Server.Controllers
                     .Include(u => u.Progression)
                     .Include(u => u.Stats)
                     .Include(u => u.PhilosopherCollection)
-                    .ThenInclude(pc => pc.Philosopher)
+                        .ThenInclude(pc => pc.Philosopher)
+                    .Include(u => u.LessonProgress)
+                        .ThenInclude(lp => lp.Lesson)
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
@@ -48,12 +56,14 @@ namespace CritiQuest2.Server.Controllers
                 await EnsureUserProgressionExists(userId);
                 await EnsureUserStatsExists(userId);
 
-                // Refresh user with newly created data
+                // Refresh user data after potential creation
                 user = await _context.Users
                     .Include(u => u.Progression)
                     .Include(u => u.Stats)
                     .Include(u => u.PhilosopherCollection)
-                    .ThenInclude(pc => pc.Philosopher)
+                        .ThenInclude(pc => pc.Philosopher)
+                    .Include(u => u.LessonProgress)
+                        .ThenInclude(lp => lp.Lesson)
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
                 // Get achievement progress
@@ -67,80 +77,81 @@ namespace CritiQuest2.Server.Controllers
                         {
                             ap.Achievement.Name,
                             ap.Achievement.Description,
-                            ap.Achievement.RewardExperience,
-                            ap.Achievement.RewardGachaTickets
+                            RewardExperience = ap.Achievement.RewardExperience,
+                            RewardGachaTickets = ap.Achievement.RewardGachaTickets
                         },
                         ap.CurrentValue,
                         ap.TargetValue,
                         ap.Completed,
                         ap.UnlockedAt,
                         ap.Viewed,
-                        ap.Progress
+                        Progress = ap.TargetValue > 0 ? (double)ap.CurrentValue / ap.TargetValue * 100 : 0
                     })
                     .ToListAsync();
 
-                // Get recent lesson progress
+                // Get recent lesson activity
                 var recentLessons = await _context.LessonProgress
                     .Include(lp => lp.Lesson)
-                    .Where(lp => lp.UserId == userId)
+                    .Where(lp => lp.UserId == userId && lp.CompletedAt != null)
                     .OrderByDescending(lp => lp.CompletedAt)
                     .Take(5)
                     .Select(lp => new
                     {
-                        lp.LessonId,
+                        LessonId = lp.LessonId,
                         LessonTitle = lp.Lesson.Title,
-                        lp.Score,
-                        lp.CompletedAt,
-                        lp.TimeSpent
+                        Score = lp.BestScore,
+                        CompletedAt = lp.CompletedAt!,
+                        TimeSpent = lp.TimeSpent
                     })
                     .ToListAsync();
 
-                // Calculate level from experience
-                var level = CalculateLevel(user.Progression?.Experience ?? 0);
-                var experienceForNextLevel = CalculateExperienceForLevel(level + 1);
-                var experienceForCurrentLevel = CalculateExperienceForLevel(level);
+                // Calculate experience for next level (simple formula)
+                var currentLevel = user.Progression?.Level ?? 1;
+                var currentExp = user.Progression?.Experience ?? 0;
+                var expForCurrentLevel = CalculateExperienceForLevel(currentLevel - 1);
+                var expForNextLevel = CalculateExperienceForLevel(currentLevel);
 
                 var profile = new
                 {
                     User = new
                     {
-                        user.Id,
-                        user.Email,
-                        user.DisplayName,
-                        user.AvatarUrl,
-                        user.JoinedAt,
-                        user.LastActive
+                        Id = user.Id,
+                        Email = user.Email!,
+                        DisplayName = user.DisplayName ?? user.Email!,
+                        AvatarUrl = user.AvatarUrl,
+                        JoinedAt = user.JoinedAt,
+                        LastActive = user.LastActive
                     },
                     Progression = new
                     {
-                        Level = level,
+                        Level = user.Progression?.Level ?? 1,
                         Experience = user.Progression?.Experience ?? 0,
-                        ExperienceForNextLevel = experienceForNextLevel,
-                        ExperienceForCurrentLevel = experienceForCurrentLevel,
-                        ExperienceToNextLevel = experienceForNextLevel - (user.Progression?.Experience ?? 0),
+                        ExperienceForNextLevel = expForNextLevel,
+                        ExperienceForCurrentLevel = expForCurrentLevel,
+                        ExperienceToNextLevel = Math.Max(0, expForNextLevel - currentExp),
                         CurrentStage = user.Progression?.CurrentStage ?? "ancient-philosophy",
-                        CompletedLessons = JsonSerializer.Deserialize<string[]>(user.Progression?.CompletedLessonsJson ?? "[]"),
-                        UnlockedPhilosophers = JsonSerializer.Deserialize<string[]>(user.Progression?.UnlockedPhilosophersJson ?? "[]")
+                        CompletedLessons = DeserializeStringArray(user.Progression?.CompletedLessonsJson ?? "[]"),
+                        UnlockedPhilosophers = DeserializeStringArray(user.Progression?.UnlockedPhilosophersJson ?? "[]")
                     },
                     Stats = new
                     {
                         TotalTimeSpent = user.Stats?.TotalTimeSpent ?? 0,
                         StreakDays = user.Stats?.StreakDays ?? 0,
-                        LastStreakUpdate = user.Stats?.LastStreakUpdate ?? DateTime.UtcNow,
+                        LastStreakUpdate = user.Stats?.LastStreakUpdate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") ?? DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
                         QuizzesCompleted = user.Stats?.QuizzesCompleted ?? 0,
                         PerfectScores = user.Stats?.PerfectScores ?? 0,
-                        GachaTickets = user.Stats?.GachaTickets ?? 0
+                        GachaTickets = user.Stats?.GachaTickets ?? 3 // Start with some tickets
                     },
                     PhilosopherCollection = user.PhilosopherCollection.Select(pc => new
                     {
-                        pc.Id,
+                        Id = pc.Id,
                         PhilosopherId = pc.PhilosopherId,
                         PhilosopherName = pc.Philosopher.Name,
                         PhilosopherRarity = pc.Philosopher.Rarity,
-                        pc.Level,
-                        pc.Experience,
-                        pc.Duplicates,
-                        pc.ObtainedAt
+                        Level = pc.Level,
+                        Experience = pc.Experience,
+                        Duplicates = pc.Duplicates,
+                        ObtainedAt = pc.ObtainedAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
                     }).ToList(),
                     Achievements = achievementProgress,
                     RecentActivity = recentLessons
@@ -151,7 +162,7 @@ namespace CritiQuest2.Server.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching profile for user {UserId}", userId);
-                return StatusCode(500, new { message = "Error fetching profile" });
+                return StatusCode(500, new { message = "Error fetching profile", error = ex.Message });
             }
         }
 
@@ -171,20 +182,11 @@ namespace CritiQuest2.Server.Controllers
 
                 var stats = await _context.UserStats
                     .Where(us => us.UserId == userId)
-                    .Select(us => new
-                    {
-                        us.TotalTimeSpent,
-                        us.StreakDays,
-                        us.LastStreakUpdate,
-                        us.QuizzesCompleted,
-                        us.PerfectScores,
-                        us.GachaTickets
-                    })
                     .FirstOrDefaultAsync();
 
                 // Get additional calculated stats
                 var completedLessonsCount = await _context.LessonProgress
-                    .CountAsync(lp => lp.UserId == userId);
+                    .CountAsync(lp => lp.UserId == userId && lp.CompletedAt != null);
 
                 var philosopherCount = await _context.OwnedPhilosophers
                     .CountAsync(op => op.UserId == userId);
@@ -200,10 +202,10 @@ namespace CritiQuest2.Server.Controllers
                 {
                     TotalTimeSpent = stats?.TotalTimeSpent ?? 0,
                     StreakDays = stats?.StreakDays ?? 0,
-                    LastStreakUpdate = stats?.LastStreakUpdate ?? DateTime.UtcNow,
+                    LastStreakUpdate = (stats?.LastStreakUpdate ?? DateTime.UtcNow).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
                     QuizzesCompleted = stats?.QuizzesCompleted ?? 0,
                     PerfectScores = stats?.PerfectScores ?? 0,
-                    GachaTickets = stats?.GachaTickets ?? 0,
+                    GachaTickets = stats?.GachaTickets ?? 3,
                     CompletedLessons = completedLessonsCount,
                     PhilosopherCount = philosopherCount,
                     CompletedAchievements = completedAchievements,
@@ -213,7 +215,7 @@ namespace CritiQuest2.Server.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching stats for user {UserId}", userId);
-                return StatusCode(500, new { message = "Error fetching stats" });
+                return StatusCode(500, new { message = "Error fetching stats", error = ex.Message });
             }
         }
 
@@ -248,7 +250,7 @@ namespace CritiQuest2.Server.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating profile for user {UserId}", userId);
-                return StatusCode(500, new { message = "Error updating profile" });
+                return StatusCode(500, new { message = "Error updating profile", error = ex.Message });
             }
         }
 
@@ -266,49 +268,50 @@ namespace CritiQuest2.Server.Controllers
             {
                 await EnsureUserStatsExists(userId);
 
-                var userStats = await _context.UserStats
-                    .FirstOrDefaultAsync(us => us.UserId == userId);
+                var stats = await _context.UserStats
+                    .FirstAsync(us => us.UserId == userId);
 
-                if (userStats != null)
+                var today = DateTime.UtcNow.Date;
+                var lastUpdate = stats.LastStreakUpdate.Date;
+
+                if (lastUpdate == today)
                 {
-                    var today = DateTime.UtcNow.Date;
-                    var lastUpdate = userStats.LastStreakUpdate.Date;
-
-                    if (lastUpdate < today)
-                    {
-                        if (lastUpdate == today.AddDays(-1))
-                        {
-                            // Consecutive day - increment streak
-                            userStats.StreakDays++;
-                        }
-                        else if (lastUpdate < today.AddDays(-1))
-                        {
-                            // Missed days - reset streak
-                            userStats.StreakDays = 1;
-                        }
-
-                        userStats.LastStreakUpdate = DateTime.UtcNow;
-                        await _context.SaveChangesAsync();
-                    }
+                    // Already updated today
+                    return Ok(new { streak = stats.StreakDays });
+                }
+                else if (lastUpdate == today.AddDays(-1))
+                {
+                    // Consecutive day - increment streak
+                    stats.StreakDays++;
+                }
+                else
+                {
+                    // Broken streak - reset to 1
+                    stats.StreakDays = 1;
                 }
 
-                return Ok(new { Streak = userStats?.StreakDays ?? 0 });
+                stats.LastStreakUpdate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { streak = stats.StreakDays });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating streak for user {UserId}", userId);
-                return StatusCode(500, new { message = "Error updating streak" });
+                return StatusCode(500, new { message = "Error updating streak", error = ex.Message });
             }
         }
 
+        #region Helper Methods
+
         private async Task EnsureUserProgressionExists(string userId)
         {
-            var existingProgression = await _context.UserProgressions
+            var progression = await _context.UserProgressions
                 .FirstOrDefaultAsync(up => up.UserId == userId);
 
-            if (existingProgression == null)
+            if (progression == null)
             {
-                var progression = new UserProgression
+                progression = new UserProgression
                 {
                     UserId = userId,
                     Level = 1,
@@ -325,12 +328,12 @@ namespace CritiQuest2.Server.Controllers
 
         private async Task EnsureUserStatsExists(string userId)
         {
-            var existingStats = await _context.UserStats
+            var stats = await _context.UserStats
                 .FirstOrDefaultAsync(us => us.UserId == userId);
 
-            if (existingStats == null)
+            if (stats == null)
             {
-                var stats = new UserStats
+                stats = new UserStats
                 {
                     UserId = userId,
                     TotalTimeSpent = 0,
@@ -338,7 +341,7 @@ namespace CritiQuest2.Server.Controllers
                     LastStreakUpdate = DateTime.UtcNow,
                     QuizzesCompleted = 0,
                     PerfectScores = 0,
-                    GachaTickets = 3 // Starting tickets
+                    GachaTickets = 3 // Start with some tickets
                 };
 
                 _context.UserStats.Add(stats);
@@ -346,22 +349,24 @@ namespace CritiQuest2.Server.Controllers
             }
         }
 
-        private int CalculateLevel(int experience)
+        private static int CalculateExperienceForLevel(int level)
         {
-            // Simple leveling formula: Level = floor(sqrt(experience / 100)) + 1
-            return (int)Math.Floor(Math.Sqrt(experience / 100.0)) + 1;
+            // Simple exponential formula: level^2 * 100
+            return level * level * 100;
         }
 
-        private int CalculateExperienceForLevel(int level)
+        private static string[] DeserializeStringArray(string json)
         {
-            // Experience needed for level: (level - 1)^2 * 100
-            return (level - 1) * (level - 1) * 100;
+            try
+            {
+                return JsonSerializer.Deserialize<string[]>(json) ?? Array.Empty<string>();
+            }
+            catch
+            {
+                return Array.Empty<string>();
+            }
         }
-    }
 
-    public class UpdateProfileRequest
-    {
-        public string? DisplayName { get; set; }
-        public string? AvatarUrl { get; set; }
+        #endregion
     }
 }

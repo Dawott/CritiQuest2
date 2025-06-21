@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CritiQuest2.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7fa6220b16db03845667ce9b89eea6eec4fcfe73")]
 [assembly: System.Reflection.AssemblyProductAttribute("CritiQuest2.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CritiQuest2.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

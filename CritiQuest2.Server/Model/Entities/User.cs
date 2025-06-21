@@ -13,6 +13,7 @@ namespace CritiQuest2.Server.Model.Entities
 
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastActive { get; set; } = DateTime.UtcNow;
+        //public int GachaTickets { get; set; } = 5;
 
         // Navigation properties
         public UserProgression? Progression { get; set; }

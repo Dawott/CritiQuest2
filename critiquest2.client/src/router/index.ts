@@ -83,6 +83,16 @@ const router = createRouter({
         requiresAuth: true,
         title: 'Scenariusz Interaktywny'
       }
+    },
+    {
+      path: '/gacha',
+      name: 'Gacha',
+      component: () => import('@/views/GachaView.vue')
+    },
+    {
+      path: '/admin',
+      name: 'Admin',
+      component: () => import('@/views/AdminPanel.vue')
     }
   ]
 })

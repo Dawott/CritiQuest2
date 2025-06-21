@@ -10,27 +10,14 @@
         </p>
       </div>
 
-      <!-- Debug info (remove this after fixing) -->
-      <div v-if="debugMode" class="bg-blue-50 border border-blue-200 rounded-md p-4 text-sm">
-        <h4 class="font-medium text-blue-900 mb-2">Debug Info:</h4>
-        <p><strong>Current URL:</strong> {{ window.location.href }}</p>
-        <p><strong>API Base:</strong> /api</p>
-        <p><strong>Form Data:</strong> {{ JSON.stringify(form) }}</p>
-        <p><strong>Last Error:</strong> {{ lastError || 'None' }}</p>
-      </div>
-
       <form class="mt-8 space-y-6" @submit.prevent.stop="handleLogin">
         <div v-if="authStore.error" class="bg-red-50 border border-red-200 rounded-md p-4">
           <p class="text-sm text-red-600">{{ authStore.error }}</p>
         </div>
 
-        <div v-if="lastError" class="bg-orange-50 border border-orange-200 rounded-md p-4">
-          <p class="text-sm text-orange-600">Debug: {{ lastError }}</p>
-        </div>
-
         <div class="space-y-4">
           <div>
-            <label for="email" class="form-label">Email address</label>
+            <label for="email" class="form-label">Email</label>
             <input id="email"
                    v-model="form.email"
                    name="email"
@@ -38,11 +25,11 @@
                    autocomplete="email"
                    required
                    class="form-input"
-                   placeholder="Enter your email" />
+                   placeholder="Wpisz email" />
           </div>
 
           <div>
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label">Hasło</label>
             <input id="password"
                    v-model="form.password"
                    name="password"
@@ -50,7 +37,7 @@
                    autocomplete="current-password"
                    required
                    class="form-input"
-                   placeholder="Enter your password" />
+                   placeholder="Wpisz hasło" />
           </div>
         </div>
 
@@ -58,30 +45,16 @@
           <button type="submit"
                   :disabled="authStore.loading"
                   class="btn-primary w-full">
-            <span v-if="authStore.loading">Signing in...</span>
-            <span v-else>Sign in</span>
+            <span v-if="authStore.loading">Logowanie...</span>
+            <span v-else>Zaloguj się</span>
           </button>
-
-          <!-- Quick test buttons (remove after fixing) -->
-          <div v-if="debugMode" class="space-y-2">
-            <button type="button"
-                    @click="testApi"
-                    class="btn-secondary w-full text-xs">
-              Test API Connection
-            </button>
-            <button type="button"
-                    @click="fillTestData"
-                    class="btn-secondary w-full text-xs">
-              Fill Test Data
-            </button>
-          </div>
         </div>
 
         <div class="text-center">
           <p class="text-sm text-gray-600">
-            Don't have an account?
+            Nie masz konta?
             <router-link to="/register" class="font-medium text-primary-600 hover:text-primary-500">
-              Sign up
+              Zarejestruj się
             </router-link>
           </p>
         </div>

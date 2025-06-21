@@ -97,6 +97,8 @@ builder.Services.AddCors(options =>
     });
 
 });
+
+builder.Services.AddScoped<IGachaService, GachaService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IDatabaseSeedingService, DatabaseSeedingService>();
 builder.Services.AddAutoMapper(typeof(Program));

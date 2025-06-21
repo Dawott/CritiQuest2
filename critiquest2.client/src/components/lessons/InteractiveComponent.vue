@@ -33,17 +33,16 @@
                              @response-updated="handleResponsesUpdate" />
 
       <!-- Timeline Component -->
-      <TimelineInteraction v-else-if="section.interactionType === 'timeline'"
-                           :section="section"
-                           :initialResponse="currentResponses"
-                           @response-updated="handleResponsesUpdate" />
+      <!--<TimelineInteraction v-else-if="section.interactionType === 'timeline'"
+                       :section="section"
+                       :initialResponse="currentResponses"
+                       @response-updated="handleResponsesUpdate" />
 
-      <!-- Comparison Component -->
-      <ComparisonInteraction v-else-if="section.interactionType === 'comparison'"
-                             :section="section"
-                             :initialResponse="currentResponses"
-                             @response-updated="handleResponsesUpdate" />
-
+  <!-- Comparison Component -->
+      <!--<ComparisonInteraction v-else-if="section.interactionType === 'comparison'"
+                         :section="section"
+                         :initialResponse="currentResponses"
+                         @response-updated="handleResponsesUpdate" />-->
       <!-- Fallback for unknown types -->
       <div v-else class="text-center py-8 text-gray-500">
         <p>Ten typ interakcji nie jest jeszcze obsługiwany: {{ section.interactionType }}</p>
@@ -76,9 +75,9 @@
 import { ref, computed, watch } from 'vue'
 import { useInteractionsStore } from '@/stores/interactions'
 import ReflectionInteraction from './ReflectionInteraction.vue'
-import ConceptMapInteraction from './ConceptMapInteraction.vue'
-import TimelineInteraction from './TimelineInteraction.vue'
-import ComparisonInteraction from './ComparisonInteraction.vue'
+//import ConceptMapInteraction from './ConceptMapInteraction.vue'
+//import TimelineInteraction from './TimelineInteraction.vue'
+//import ComparisonInteraction from './ComparisonInteraction.vue'
 
 interface LessonSection {
   id: string
@@ -111,7 +110,7 @@ const completionProgress = computed(() => {
       const responses = currentResponses.value.responses || []
       const completedPrompts = responses.filter((r: string) => r && r.trim().length > 0).length
       return prompts.length > 0 ? Math.round((completedPrompts / prompts.length) * 100) : 0
-
+      /*
     case 'concept-map':
       return currentResponses.value.concepts && currentResponses.value.concepts.length > 0 ? 100 : 0
 
@@ -121,7 +120,7 @@ const completionProgress = computed(() => {
 
     case 'comparison':
       const comparisons = currentResponses.value.comparisons || {}
-      return Object.keys(comparisons).length > 0 ? 100 : 0
+      return Object.keys(comparisons).length > 0 ? 100 : 0*/
 
     default:
       return 0

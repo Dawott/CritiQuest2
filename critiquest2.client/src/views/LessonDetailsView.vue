@@ -222,7 +222,6 @@
       </div>
     </div>
   </div>
-  </div>
   <InteractiveScenariosPanel v-if="lesson"
                              :lesson-id="lesson.id"
                              class="mt-8" />
@@ -234,7 +233,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useLessonsStore } from '@/stores/lessons'
 import { useProfileStore } from '@/stores/profile'
   import type { Lesson } from '@/services/lessonApi'
-  import InteractiveSection from '@/components/lessons/InteractiveSection.vue'
+  import InteractiveSection from '@/components/lessons/InteractiveComponent.vue'
   import InteractiveScenariosPanel from '@/components/interactive/InteractiveScenariosPanel.vue'
 
 const route = useRoute()

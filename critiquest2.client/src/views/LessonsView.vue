@@ -150,7 +150,7 @@
               <div v-if="lesson.requiredPhilosopher && !hasRequiredPhilosopher(lesson)" class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                 <div class="flex items-center">
                   <span class="text-yellow-600 text-xs">
-                    ⚠️ Wymagani filozofowie: {{ formatPhilosopherName(lesson.requiredPhilosopher) }}
+                    ⚠️ Zalecani filozofowie: {{ formatPhilosopherName(lesson.requiredPhilosopher) }}
                   </span>
                 </div>
               </div>
@@ -212,9 +212,9 @@ const isLessonAvailable = (lesson: Lesson) => {
   if (lesson.isCompleted) return true
 
   // Check if required philosopher is owned
-  if (lesson.requiredPhilosopher) {
+  /*if (lesson.requiredPhilosopher) {
     return hasRequiredPhilosopher(lesson)
-  }
+  }*/
 
   return true
 }

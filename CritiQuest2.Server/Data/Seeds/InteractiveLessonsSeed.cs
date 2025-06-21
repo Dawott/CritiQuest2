@@ -32,7 +32,7 @@ namespace CritiQuest2.Server.Data.Seeds
                         "Jak uznanie swojej wolności wyboru zmienia Twoje samopoczucie?"
                     },
                     Guidance = "Nie ma \"właściwej\" odpowiedzi - ćwiczenie polega na uznaniu wolności wyboru i wartości, które ten wybór wyraża.",
-                    PhilosophicalConcepts = new List<string> { "authenticity", "freedom", "responsibility", "choice" }
+                    PhilosophicalConcepts = new List<string> { "autentycznosc", "wolnosc", "odpowiedzialnosc", "wybor" }
                 })
             };
 

@@ -52,7 +52,7 @@ namespace CritiQuest2.Server.Controllers
                 return Ok(new
                 {
                     message = $"Added {request.Amount} gacha tickets",
-                    totalTickets = user.GachaTickets
+                    totalTickets = user.Stats.GachaTickets
                 });
             }
             catch (Exception ex)

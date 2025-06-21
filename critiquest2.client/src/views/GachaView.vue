@@ -12,7 +12,7 @@
         <div class="flex items-center justify-center gap-4">
           <div class="text-yellow-400 text-3xl">🎫</div>
           <div>
-            <div class="text-2xl font-bold text-white">{{ userStore.user?.stats.gachaTickets || 0 }}</div>
+            <div class="text-2xl font-bold text-white">{{ profileStore.stats?.gachaTickets || 0 }}</div>
             <div class="text-blue-200">Dostępne bilety</div>
           </div>
         </div>
@@ -45,13 +45,13 @@
                   ? 'bg-purple-600 text-white'
                   : 'bg-white/20 text-white hover:bg-white/30'
               ]"
-                    :disabled="(userStore.user?.stats.gachaTickets || 0) < count">
+                    :disabled="(profileStore.stats?.gachaTickets || 0) < count">
               {{ count }}x
             </button>
           </div>
 
           <button @click="performSummon"
-                  :disabled="loading || (userStore.user?.stats.gachaTickets || 0) < selectedTicketCount"
+                  :disabled="loading || (profileStore.stats?.gachaTickets || 0) < selectedTicketCount"
                   class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg
                    hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed
                    transform transition-all hover:scale-105 active:scale-95">
@@ -190,11 +190,13 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue'
   import { usePhilosophersStore } from '@/stores/philosophers'
-  import { useUserStore } from '@/stores/user'
+  import { useAuthStore } from '@/stores/auth'
+  import { useProfileStore } from '@/stores/profile'
   import { gachaApi, type GachaSummonResponse, type GachaRatesResponse } from '@/services/gachaApi'
 
   const philosophersStore = usePhilosophersStore()
-  const userStore = useUserStore()
+  const authStore = useAuthStore()
+  const profileStore = useProfileStore()
 
   const loading = ref(false)
   const selectedTicketCount = ref(1)
@@ -216,7 +218,7 @@
 
       // Refresh user data and collection
       await Promise.all([
-        userStore.fetchProfile(),
+        profileStore.fetchProfile(),
         philosophersStore.fetchCollection(),
         philosophersStore.fetchPhilosophers()
       ])
@@ -267,7 +269,7 @@
         gachaApi.getGachaRates(),
         philosophersStore.fetchPhilosophers(),
         philosophersStore.fetchCollection(),
-        userStore.fetchProfile()
+        profileStore.fetchProfile()
       ])
       gachaRates.value = rates
     } catch (error) {

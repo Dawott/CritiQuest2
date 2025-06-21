@@ -432,15 +432,15 @@ const getStatValue = (philosopher: Philosopher, stat: string) => {
 }
 
 const getEmptyStateTitle = () => {
-  if (activeTab.value === 'owned') return 'No philosophers in your collection'
-  if (activeTab.value === 'missing') return 'You have all philosophers!'
-  return 'No philosophers found'
+  if (activeTab.value === 'owned') return 'Twój Gimnazjon jest pusty!'
+  if (activeTab.value === 'missing') return 'Masz wszystkich!'
+  return 'Twój Gimnazjon jest pusty'
 }
 
 const getEmptyStateMessage = () => {
-  if (activeTab.value === 'owned') return 'Start collecting legendary thinkers through lessons and gacha!'
-  if (activeTab.value === 'missing') return 'Congratulations on completing your collection!'
-  return 'Try adjusting your filters to see more philosophers.'
+  if (activeTab.value === 'owned') return 'Zacznij kolekcjonować wielkich myślicieli w stylu Gacha'
+  if (activeTab.value === 'missing') return 'Gratulujemy uzupełnienia kolekcji!'
+  return 'Spróbuj inne filtry.'
 }
 
 const selectPhilosopher = (philosopher: Philosopher) => {

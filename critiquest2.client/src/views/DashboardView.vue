@@ -188,9 +188,9 @@
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-    if (diffDays === 1) return 'Today'
-    if (diffDays === 2) return 'Yesterday'
-    if (diffDays <= 7) return `${diffDays} days ago`
+    if (diffDays === 1) return 'Dzisiaj'
+    if (diffDays === 2) return 'Wczoraj'
+    if (diffDays <= 7) return `${diffDays} dni temu`
 
     return date.toLocaleDateString()
   }

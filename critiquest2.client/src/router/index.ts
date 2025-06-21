@@ -85,11 +85,6 @@ const router = createRouter({
       }
     },
     {
-      path: '/gacha',
-      name: 'Gacha',
-      component: () => import('@/views/GachaView.vue')
-    },
-    {
       path: '/admin',
       name: 'Admin',
       component: () => import('@/views/AdminPanel.vue')

@@ -1,12 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace CritiQuest2.Server.Model.Entities
 {
     public enum Difficulty
     {
+        [EnumMember(Value ="beginner")]
         Beginner = 1,
+        [EnumMember(Value = "intermediate")]
         Intermediate = 2,
+        [EnumMember(Value = "advanced")]
         Advanced = 3,
+        [EnumMember(Value = "expert")]
         Expert = 4
     }
     public class Lesson

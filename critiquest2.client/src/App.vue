@@ -9,9 +9,9 @@
             </router-link>
             <div class="ml-8 flex space-x-4">
               <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
-              <router-link to="/lessons" class="nav-link">Lessons</router-link>
-              <router-link to="/philosophers" class="nav-link">Philosophers</router-link>
-              <router-link to="/gacha" class="nav-link">Gacha</router-link>
+              <router-link to="/lessons" class="nav-link">Lekcje</router-link>
+              <router-link to="/philosophers" class="nav-link">Filozofowie</router-link>
+              <router-link to="/gacha" class="nav-link">Wyrocznia</router-link>
             </div>
           </div>
 
@@ -33,7 +33,7 @@
     <div v-if="authLoading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-        <p class="mt-2 text-sm text-gray-600">Loading...</p>
+        <p class="mt-2 text-sm text-gray-600">Ładowanie...</p>
       </div>
     </div>
   </div>

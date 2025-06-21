@@ -1,13 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace CritiQuest2.Server.Model.Entities
 {
     public enum Rarity
     {
+        [EnumMember(Value = "common")]
         Common = 1,
+        [EnumMember(Value = "uncommon")]
         Uncommon = 2,
+        [EnumMember(Value = "rarity")]
         Rare = 3,
+        [EnumMember(Value = "epic")]
         Epic = 4,
+        [EnumMember(Value = "legendary")]
         Legendary = 5
     }
     public class Philosopher

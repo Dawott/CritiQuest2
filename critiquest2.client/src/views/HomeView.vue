@@ -99,7 +99,7 @@
             <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-600 rounded-xl flex items-center justify-center text-2xl">
               🎭
             </div>
-            <h3 class="text-xl font-semibold text-white mb-4 mt-4">Twoje Gimnazjon</h3>
+            <h3 class="text-xl font-semibold text-white mb-4 mt-4">Twój Gimnazjon</h3>
             <p class="text-indigo-200 leading-relaxed">
               Zbieraj legendarnych filozofów od Sokratesa po Simone de Beauvoir.
               Każdy myśliciel ma unikalne umiejętności i mądrość.
@@ -139,7 +139,7 @@
               Rozwijaj umiejętności argumentacji i krytycznego myślenia.
             </p>
             <div class="mt-6 text-sm text-yellow-400 font-medium">
-              • AI-powered debaty<br>
+              • AI-wspomagane debaty<br>
               • Różne szkoły filozoficzne<br>
               • Punkty przekonania i retoryki
             </div>

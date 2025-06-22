@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using CritiQuest2.Server.DTOs;
 using CritiQuest2.Server.Services;
-using CritiQuest2.Server.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CritiQuest2.Server.Controllers
 {
@@ -24,7 +25,7 @@ namespace CritiQuest2.Server.Controllers
         {
             try
             {
-                var userId = User.Identity?.Name;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User not authenticated");
@@ -56,7 +57,7 @@ namespace CritiQuest2.Server.Controllers
         {
             try
             {
-                var userId = User.Identity?.Name;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized("User not authenticated");

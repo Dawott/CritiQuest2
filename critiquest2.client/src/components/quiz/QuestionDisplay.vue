@@ -11,7 +11,7 @@
     </div>
 
     <!-- Single Choice Questions -->
-    <div v-if="question.type === 'single'" class="space-y-3">
+    <div v-if="question.type === 'Single'" class="space-y-3">
       <div v-for="(option, index) in question.options"
            :key="index"
            class="option-card"
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Multiple Choice Questions -->
-    <div v-else-if="question.type === 'multiple'" class="space-y-3">
+    <div v-else-if="question.type === 'Multiple'" class="space-y-3">
       <div v-for="(option, index) in question.options"
            :key="index"
            class="option-card"
@@ -45,7 +45,7 @@
     </div>
 
     <!-- Scenario Questions -->
-    <div v-else-if="question.type === 'scenario'" class="space-y-4">
+    <div v-else-if="question.type === 'Scenario'" class="space-y-4">
       <div class="bg-gray-50 rounded-lg p-6 mb-4">
         <h3 class="font-medium text-gray-800 mb-2">Scenariusz:</h3>
         <p class="text-gray-700">{{ getScenarioContext() }}</p>
@@ -71,7 +71,7 @@
     </div>
 
     <!-- Debate Questions -->
-    <div v-else-if="question.type === 'debate'" class="space-y-4">
+    <div v-else-if="question.type === 'Debate'" class="space-y-4">
       <DebateInterface :question="question"
                        :userAnswer="userAnswer"
                        @answer-changed="handleDebateAnswer" />

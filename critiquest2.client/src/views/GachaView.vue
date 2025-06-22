@@ -12,7 +12,7 @@
         <div class="flex items-center justify-center gap-4">
           <div class="text-yellow-400 text-3xl">🎫</div>
           <div>
-            <div class="text-2xl font-bold text-white">{{ profileStore.stats?.gachaTickets || 0 }}</div>
+            <div class="text-2xl font-bold text-white">{{ profileStore.profile?.stats.gachaTickets || 0 }}</div>
             <div class="text-blue-200">Dostępne bilety</div>
           </div>
         </div>
@@ -45,13 +45,13 @@
                   ? 'bg-purple-600 text-white'
                   : 'bg-white/20 text-white hover:bg-white/30'
               ]"
-                    :disabled="(profileStore.stats?.gachaTickets || 0) < count">
+                    :disabled="(profileStore.profile?.stats.gachaTickets || 0) < count">
               {{ count }}x
             </button>
           </div>
 
           <button @click="performSummon"
-                  :disabled="loading || (profileStore.stats?.gachaTickets || 0) < selectedTicketCount"
+                  :disabled="loading || (profileStore.profile?.stats.gachaTickets || 0) < selectedTicketCount"
                   class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg
                    hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed
                    transform transition-all hover:scale-105 active:scale-95">
@@ -269,7 +269,8 @@
         gachaApi.getGachaRates(),
         philosophersStore.fetchPhilosophers(),
         philosophersStore.fetchCollection(),
-        profileStore.fetchProfile()
+        profileStore.fetchProfile(),
+        profileStore.fetchStats()
       ])
       gachaRates.value = rates
     } catch (error) {

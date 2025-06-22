@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CritiQuest2.Server.Data;
 using CritiQuest2.Server.Model.Entities;
+using CritiQuest2.Server.Services;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -21,6 +22,7 @@ namespace CritiQuest2.Server.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ProfileController> _logger;
+        private readonly IProgressionService _progressionService;
 
         public ProfileController(ApplicationDbContext context, ILogger<ProfileController> logger)
         {
@@ -163,6 +165,44 @@ namespace CritiQuest2.Server.Controllers
             {
                 _logger.LogError(ex, "Error fetching profile for user {UserId}", userId);
                 return StatusCode(500, new { message = "Error fetching profile", error = ex.Message });
+            }
+        }
+
+        [HttpGet("progression-summary")]
+        public async Task<ActionResult> GetProgressionSummary()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var summary = await _progressionService.GetProgressionSummaryAsync(userId);
+                return Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting progression summary for user");
+                return StatusCode(500, new { message = "Error retrieving progression summary" });
+            }
+        }
+
+        [HttpPost("recalculate-level")]
+        public async Task<ActionResult> RecalculateLevel()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var userProgression = await _progressionService.RecalculateUserLevelAsync(userId);
+
+                return Ok(new
+                {
+                    message = "Level recalculated successfully",
+                    currentLevel = userProgression.Level,
+                    currentExperience = userProgression.Experience
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error recalculating level for user");
+                return StatusCode(500, new { message = "Error recalculating level" });
             }
         }
 

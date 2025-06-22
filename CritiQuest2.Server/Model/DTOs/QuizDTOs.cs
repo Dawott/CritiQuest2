@@ -76,4 +76,43 @@
         public int Points { get; set; }
         public int MaxPoints { get; set; }
     }
+
+    public class EnhancedQuizResultDto : QuizResultDto
+    {
+        public QuizRewardsDto? Rewards { get; set; }
+        public ProgressionResultDto? Progression { get; set; }
+        public string Message { get; set; } = "";
+    }
+
+    public class QuizRewardsDto
+    {
+        public int Experience { get; set; }
+        public ExperienceBreakdownDto ExperienceBreakdown { get; set; } = new();
+    }
+
+    public class ExperienceBreakdownDto
+    {
+        public int Base { get; set; }
+        public int PointsBonus { get; set; }
+        public int PerfectBonus { get; set; }
+        public int PassBonus { get; set; }
+    }
+
+    public class ProgressionResultDto
+    {
+        public int ExperienceGained { get; set; }
+        public int CurrentLevel { get; set; }
+        public bool LeveledUp { get; set; }
+        public int NewLevel { get; set; }
+        public List<AchievementDto> NewAchievements { get; set; } = new();
+    }
+
+    public class AchievementDto
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public int RewardExperience { get; set; }
+        public int RewardGachaTickets { get; set; }
+    }
 }

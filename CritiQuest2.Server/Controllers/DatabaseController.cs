@@ -119,10 +119,11 @@ namespace CritiQuest2.Server.Controllers
                 }
             }
 
-            /// <summary>
-            /// Seed specific entity types (Development only)
-            /// </summary>
-            [HttpPost("seed/{entityType}")]
+
+        /// <summary>
+        /// Seed specific entity types (Development only)
+        /// </summary>
+        [HttpPost("seed/{entityType}")]
             public async Task<IActionResult> SeedSpecificEntity(string entityType)
             {
                 if (!_environment.IsDevelopment())
@@ -132,28 +133,30 @@ namespace CritiQuest2.Server.Controllers
 
                 try
                 {
-                    switch (entityType.ToLower())
-                    {
-                        case "philosophers":
-                            await _seedingService.SeedPhilosophersAsync();
-                            break;
-                        case "achievements":
-                            await _seedingService.SeedAchievementsAsync();
-                            break;
-                        case "lessons":
-                            await _seedingService.SeedLessonsAsync();
-                            break;
-                        case "quizzes":
-                            await _seedingService.SeedQuizzesAsync();
-                            break;
-                        case "debates":
-                            await _seedingService.SeedDebateArgumentsAsync();
-                            break;
-                        default:
-                            return BadRequest(new { message = $"Nieznany typ jednostki: {entityType}" });
-                    }
-
-                    return Ok(new
+                switch (entityType.ToLower())
+                {
+                    case "philosophers":
+                        await _seedingService.SeedPhilosophersAsync();
+                        break;
+                    case "achievements":
+                        await _seedingService.SeedAchievementsAsync();
+                        break;
+                    case "lessons":
+                        await _seedingService.SeedLessonsAsync();
+                        break;
+                    case "interactive":
+                        await _seedingService.SeedInteractiveLessonsAsync();
+                        break;
+                    case "quizzes":
+                        await _seedingService.SeedQuizzesAsync();
+                        break;
+                    case "debates":
+                        await _seedingService.SeedDebateArgumentsAsync();
+                        break;
+                    default:
+                        return BadRequest(new { message = $"Nieznany typ jednostki: {entityType}" });
+                }
+                return Ok(new
                     {
                         message = $"{entityType} seed zakonczony",
                         timestamp = DateTime.UtcNow
@@ -207,10 +210,78 @@ namespace CritiQuest2.Server.Controllers
                 }
             }
 
-            /// <summary>
-            /// Get sample philosophers for testing
-            /// </summary>
-            [HttpGet("sample/philosophers")]
+        /// <summary>
+        /// Update ContentJson for specific lesson (Development only)
+        /// </summary>
+        [HttpPost("update-content/{lessonId}")]
+        public async Task<IActionResult> UpdateLessonContent(string lessonId)
+        {
+            if (!_environment.IsDevelopment())
+            {
+                return Forbid("Content update dostępny jest tylko na dev");
+            }
+
+            try
+            {
+                await _seedingService.UpdateLessonContentAsync(lessonId);
+
+                return Ok(new
+                {
+                    message = $"Content updated successfully for lesson: {lessonId}",
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating content for lesson {LessonId}", lessonId);
+                return StatusCode(500, new
+                {
+                    message = $"Error updating content for lesson: {lessonId}",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Update ContentJson for all lessons from seed data (Development only)
+        /// </summary>
+        [HttpPost("update-content/all")]
+        public async Task<IActionResult> UpdateAllLessonsContent()
+        {
+            if (!_environment.IsDevelopment())
+            {
+                return Forbid("Content update dostępny jest tylko na dev");
+            }
+
+            try
+            {
+                await _seedingService.UpdateAllLessonsContentAsync();
+
+                return Ok(new
+                {
+                    message = "Content updated successfully for all lessons",
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating content for all lessons");
+                return StatusCode(500, new
+                {
+                    message = "Error updating content for all lessons",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get sample philosophers for testing
+        /// </summary>
+        [HttpGet("sample/philosophers")]
             public async Task<IActionResult> GetSamplePhilosophers()
             {
                 try

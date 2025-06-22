@@ -13,6 +13,9 @@ namespace CritiQuest2.Server.Services
         Task SeedLessonsAsync();
         Task SeedQuizzesAsync();
         Task SeedDebateArgumentsAsync();
+        Task SeedInteractiveLessonsAsync();
+        Task UpdateLessonContentAsync(string lessonId);
+        Task UpdateAllLessonsContentAsync();
     }
 
     public class DatabaseSeedingService : IDatabaseSeedingService
@@ -41,6 +44,7 @@ namespace CritiQuest2.Server.Services
                 await SeedLessonsAsync();
                 await SeedQuizzesAsync();
                 await SeedDebateArgumentsAsync();
+                await SeedInteractiveLessonsAsync();
 
                 _logger.LogInformation("Database seeding completed successfully!");
             }
@@ -85,6 +89,22 @@ namespace CritiQuest2.Server.Services
             _logger.LogInformation($"Seeded {achievements.Count} achievements");
         }
 
+        public async Task SeedInteractiveLessonsAsync()
+        {
+            if (await _context.InteractiveSections.AnyAsync())
+            {
+                _logger.LogInformation("Interactive sections already exist, skipping seeding");
+                return;
+            }
+
+            _logger.LogInformation("Seeding interactive sections...");
+
+            InteractiveLessonSeed.SeedInteractiveScenarios(_context);
+
+            var sectionCount = await _context.InteractiveSections.CountAsync();
+            _logger.LogInformation($"Seeded {sectionCount} interactive sections");
+        }
+
         public async Task SeedLessonsAsync()
         {
             if (await _context.Lessons.AnyAsync())
@@ -100,6 +120,62 @@ namespace CritiQuest2.Server.Services
             await _context.SaveChangesAsync();
 
             _logger.LogInformation($"Seeded {lessons.Count} lessons");
+        }
+
+        public async Task UpdateLessonContentAsync(string lessonId)
+        {
+            _logger.LogInformation($"Updating content for lesson: {lessonId}");
+
+            var seedLessons = LessonSeedData.GetLessons();
+            var seedLesson = seedLessons.FirstOrDefault(l => l.Id == lessonId);
+
+            if (seedLesson == null)
+            {
+                throw new ArgumentException($"Lesson with ID '{lessonId}' not found in seed data");
+            }
+
+            var existingLesson = await _context.Lessons.FindAsync(lessonId);
+            if (existingLesson == null)
+            {
+                throw new ArgumentException($"Lesson with ID '{lessonId}' not found in database");
+            }
+
+            // Update ContentJson using the same serialization as seed data
+            existingLesson.ContentJson = seedLesson.ContentJson;
+            existingLesson.UpdatedAt = DateTime.UtcNow;
+
+            _context.Lessons.Update(existingLesson);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Successfully updated content for lesson: {lessonId}");
+        }
+
+        public async Task UpdateAllLessonsContentAsync()
+        {
+            _logger.LogInformation("Updating content for all lessons from seed data");
+
+            var seedLessons = LessonSeedData.GetLessons();
+            var updatedCount = 0;
+
+            foreach (var seedLesson in seedLessons)
+            {
+                var existingLesson = await _context.Lessons.FindAsync(seedLesson.Id);
+                if (existingLesson != null)
+                {
+                    existingLesson.ContentJson = seedLesson.ContentJson;
+                    existingLesson.UpdatedAt = DateTime.UtcNow;
+                    _context.Lessons.Update(existingLesson);
+                    updatedCount++;
+                    _logger.LogInformation($"Updated content for lesson: {seedLesson.Id}");
+                }
+                else
+                {
+                    _logger.LogWarning($"Lesson {seedLesson.Id} found in seed data but not in database");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation($"Successfully updated content for {updatedCount} lessons");
         }
 
         public async Task SeedQuizzesAsync()
@@ -141,6 +217,8 @@ namespace CritiQuest2.Server.Services
             _logger.LogInformation($"Seeded {debateArguments.Count} debate arguments");
         }
     }
+
+
 
     // Extension method for easy seeding
     public static class DatabaseSeedingExtensions
